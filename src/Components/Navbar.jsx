@@ -1,53 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import Logo from '../assets/Logo/Logo Vertigrow Blok.png';
+"use client";
+
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Icon } from "@iconify/react";
+import Logo from "../assets/Logo/Logo Vertigrow Blok.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const location = useLocation(); // Untuk mendapatkan rute aktif saat ini
+  const location = useLocation();
   const [scrolling, setScrolling] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false); // State untuk toggle menu
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
-  // Fungsi untuk menangani event scroll
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCartCount(cart.length);
+    };
+
+    updateCartCount();
+    window.addEventListener("storage", updateCartCount);
+
+    const interval = setInterval(updateCartCount, 500);
+    return () => {
+      window.removeEventListener("storage", updateCartCount);
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleScroll = () => {
     if (window.scrollY > 0) {
-      setScrolling(true); // Terapkan shadow jika sudah di scroll
+      setScrolling(true);
     } else {
-      setScrolling(false); // Hapus shadow jika di posisi atas
+      setScrolling(false);
     }
   };
 
-  // Menambahkan event listener untuk scroll saat komponen dimuat
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    // Bersihkan event listener saat komponen tidak digunakan lagi
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fungsi untuk melakukan navigasi ke rute yang berbeda
   const handleClick = (route) => {
-    navigate(route); // Navigasi ke rute
-    setMenuOpen(false); // Tutup menu setelah navigasi
+    navigate(route);
+    setMenuOpen(false);
   };
 
   return (
     <section
       className={`bg-[#F8F8F9] fixed top-0 left-0 w-full z-50 py-3 px-6 ${
-        scrolling ? 'shadow-lg' : ''
+        scrolling ? "shadow-lg" : ""
       }`}
     >
-      {/* container */}
       <div className="container flex justify-between items-center">
-        {/* logo */}
         <img
-          src={Logo}
+          src={Logo || "/placeholder.svg"}
           alt="logo vertigrow"
           className="h-14 w-14 cursor-pointer"
-          onClick={() => handleClick('/')}
+          onClick={() => handleClick("/")}
         />
 
-        {/* hamburger menu untuk mobile */}
-        <div className="lg:hidden flex items-center">
+        <div className="lg:hidden flex items-center gap-4">
+          <button
+            className="relative text-[#387F39]"
+            onClick={() => handleClick("/cart")}
+          >
+            <Icon icon="mdi:shopping-cart" className="text-2xl" />
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
           <button
             className="text-[#387F39] focus:outline-none"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -69,48 +93,68 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* menu navigasi */}
         <ul
           className={`${
-            menuOpen ? 'flex' : 'hidden'
+            menuOpen ? "flex" : "hidden"
           } absolute lg:static top-20 left-0 w-full lg:w-auto flex-col lg:flex-row items-center lg:flex gap-10 bg-[#F8F8F9] lg:bg-transparent p-6 lg:p-0 z-50 lg:z-auto`}
         >
           <li
             className={`cursor-pointer ${
-              location.pathname === '/' ? 'text-green-900 font-bold' : ''
+              location.pathname === "/" ? "text-green-900 font-bold" : ""
             } hover:text-green-900`}
-            onClick={() => handleClick('/')}
+            onClick={() => handleClick("/")}
           >
             Beranda
           </li>
           <li
             className={`cursor-pointer ${
-              location.pathname === '/tentang' ? 'text-green-900 font-bold' : ''
+              location.pathname === "/tentang" ? "text-green-900 font-bold" : ""
             } hover:text-green-900`}
-            onClick={() => handleClick('/tentang')}
+            onClick={() => handleClick("/tentang")}
           >
             Tentang Kami
           </li>
           <li
             className={`cursor-pointer ${
-              location.pathname === '/layanan' ? 'text-green-900 font-bold' : ''
+              location.pathname === "/layanan" ? "text-green-900 font-bold" : ""
             } hover:text-green-900`}
-            onClick={() => handleClick('/layanan')}
+            onClick={() => handleClick("/layanan")}
           >
             Layanan Kami
           </li>
+          <li
+            className={`cursor-pointer ${
+              location.pathname === "/products"
+                ? "text-green-900 font-bold"
+                : ""
+            } hover:text-green-900`}
+            onClick={() => handleClick("/products")}
+          >
+            Produk
+          </li>
 
-          {/* Tombol Masuk dan Daftar */}
+          <button
+            className="relative text-[#387F39] hover:text-green-900 hidden lg:flex items-center gap-2"
+            onClick={() => handleClick("/cart")}
+          >
+            <Icon icon="mdi:shopping-cart" className="text-xl" />
+            {cartCount > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+
           <div className="flex flex-col lg:flex-row gap-3">
             <button
               className="bg-[#387F39] hover:bg-green-800 rounded-full font-semibold text-[#F8F8F9] w-28 p-2"
-              onClick={() => handleClick('/masuk')}
+              onClick={() => handleClick("/masuk")}
             >
               Masuk
             </button>
             <button
               className="bg-[#FF8F4E] hover:bg-orange-700 rounded-full font-semibold text-[#F8F8F9] w-28 p-2"
-              onClick={() => handleClick('/daftar')}
+              onClick={() => handleClick("/daftar")}
             >
               Daftar
             </button>
