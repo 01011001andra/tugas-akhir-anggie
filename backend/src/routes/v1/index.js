@@ -1,6 +1,11 @@
 const express = require('express');
 const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
+const educationRoute = require('./education.route');
+const productRoute = require('./product.route');
+const cartRoute = require('./cart.route');
+const transactionRoute = require('./transaction.route');
+const reviewRoute = require('./review.route');
 const docsRoute = require('./docs.route');
 const config = require('../../config/config');
 
@@ -14,6 +19,26 @@ const defaultRoutes = [
   {
     path: '/users',
     route: userRoute,
+  },
+  {
+    path: '/educations',
+    route: educationRoute,
+  },
+  {
+    path: '/products',
+    route: productRoute,
+  },
+  {
+    path: '/carts',
+    route: cartRoute,
+  },
+  {
+    path: '/transactions',
+    route: transactionRoute,
+  },
+  {
+    path: '/reviews',
+    route: reviewRoute,
   },
 ];
 

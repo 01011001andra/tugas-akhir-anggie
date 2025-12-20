@@ -8,27 +8,95 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DB_URL")
+  directUrl= env("DIRECT_URL")
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String?    @unique
-  password  String    
-  role      String    @default("user")
-  createdAt DateTime  @default(now())
-  updateAt  DateTime  @default(now())
-  isEmailVerified Boolean @default(false)
-  tokens    Token[]
+  id              String    @id @default(uuid())
+  name            String
+  email           String?   @unique
+  password        String
+  role            String?    @default("user") // user, admin, superAdmin
+  isEmailVerified Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tokens          Token[]
+  review          Review[]
+  transaction     Transaction[]
+  cart            Cart[]
+  education       Education[]
 }
+
 model Token {
-  id        String    @id @default(uuid())
-  token     String    @db.VarChar(400)
-  userId    String    
-  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String
-  expires   DateTime
-  blacklisted Boolean @default(false)
-  createdAt DateTime  @default(now())
-  updateAt  DateTime  @default(now())
+  id          String    @id @default(uuid())
+  token       String    @db.VarChar(400)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  expires     DateTime
+  blacklisted Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Education {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  image       String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  stock       Int
+  price       Int
+  image       String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  review      Review[]
+}
+
+model Cart {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Transaction {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalPrice    Int
+  paymentMethod String
+  status        String
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating      Int
+  comment     String
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

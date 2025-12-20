@@ -1,5 +1,5 @@
-const {status} = require('http-status');
-const prisma = require('../../prisma')
+const { status } = require('http-status');
+const prisma = require('../../prisma');
 const ApiError = require('../utils/ApiError');
 const bcrypt = require('bcryptjs');
 
@@ -9,10 +9,22 @@ const bcrypt = require('bcryptjs');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
+  // hash password
   userBody.password = bcrypt.hashSync(userBody.password, 8);
 
+  // cek apakah ini user pertama
+  const userCount = await prisma.user.count();
+
+  // kalau user pertama → admin
+  if (userCount === 0) {
+    userBody.role = 'admin';
+  } else {
+    // kalau bukan user pertama
+    userBody.role = userBody.role || 'user';
+  }
+
   return prisma.user.create({
-    data: userBody
+    data: userBody,
   });
 };
 
@@ -33,9 +45,9 @@ const queryUsers = async () => {
 const getUserById = async (id) => {
   return prisma.user.findFirst({
     where: {
-      id: id
-    }
-  })
+      id: id,
+    },
+  });
 };
 
 /**
@@ -45,7 +57,7 @@ const getUserById = async (id) => {
  */
 const getUserByEmail = async (email) => {
   return prisma.user.findUnique({
-    where: { email }
+    where: { email },
   });
 };
 
@@ -60,13 +72,13 @@ const updateUserById = async (userId, updateBody) => {
   if (!user) {
     throw new ApiError(status.NOT_FOUND, 'User not found');
   }
-  
+
   const updateUser = await prisma.user.update({
     where: {
       id: userId,
     },
-    data: updateBody
-  })
+    data: updateBody,
+  });
 
   return updateUser;
 };
@@ -82,13 +94,14 @@ const deleteUserById = async (userId) => {
     throw new ApiError(status.NOT_FOUND, 'User not found');
   }
 
-  const deleteUsers = await prisma.user.deleteMany({
-    where: {
-      id: userId
-    },
-  })
+  // ❌ admin tidak boleh dihapus
+  if (user.role === 'admin') {
+    throw new ApiError(status.FORBIDDEN, 'Admin user cannot be deleted');
+  }
 
-  return deleteUsers;
+  return prisma.user.delete({
+    where: { id: userId },
+  });
 };
 
 module.exports = {

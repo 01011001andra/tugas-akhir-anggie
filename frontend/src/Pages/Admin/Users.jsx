@@ -1,78 +1,104 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import AdminSidebar from "../../components/AdminSidebar";
+import {
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+} from "@/services/user.service";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
-    phone: "",
-    joined: new Date().toISOString().split("T")[0],
+    password: "",
   });
 
+  // =======================
+  // FETCH USERS
+  // =======================
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const res = await getUsers();
+      setUsers(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const savedUsers = localStorage.getItem("users");
-    if (savedUsers) setUsers(JSON.parse(savedUsers));
+    fetchUsers();
   }, []);
 
-  const handleSave = () => {
-    if (!form.name || !form.email || !form.phone) {
+  // =======================
+  // SAVE (CREATE / UPDATE)
+  // =======================
+  const handleSave = async () => {
+    if (!form.name || !form.email || (!editingId && !form.password)) {
       alert("Lengkapi semua field");
       return;
     }
 
-    let updated;
-    if (editingId) {
-      updated = users.map((u) =>
-        u.id === editingId
-          ? {
-              ...u,
-              name: form.name,
-              email: form.email,
-              phone: form.phone,
-            }
-          : u
-      );
-    } else {
-      updated = [
-        ...users,
-        {
-          id: Math.max(...users.map((u) => u.id), 0) + 1,
+    try {
+      setLoading(true);
+
+      if (editingId) {
+        await updateUser(editingId, {
           name: form.name,
           email: form.email,
-          phone: form.phone,
-          joined: form.joined,
-        },
-      ];
-    }
+        });
+      } else {
+        await createUser({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        });
+      }
 
-    localStorage.setItem("users", JSON.stringify(updated));
-    setUsers(updated);
-    resetForm();
-    setShowModal(false);
+      await fetchUsers();
+      resetForm();
+      setShowModal(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // =======================
+  // EDIT
+  // =======================
   const handleEdit = (user) => {
     setForm({
       name: user.name,
       email: user.email,
-      phone: user.phone,
-      joined: user.joined,
+      password: "",
     });
     setEditingId(user.id);
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Yakin ingin menghapus user ini?")) {
-      const updated = users.filter((u) => u.id !== id);
-      localStorage.setItem("users", JSON.stringify(updated));
-      setUsers(updated);
+  // =======================
+  // DELETE
+  // =======================
+  const handleDelete = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus user ini?")) return;
+
+    try {
+      setLoading(true);
+      await deleteUser(id);
+      await fetchUsers();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,8 +106,7 @@ export default function AdminUsers() {
     setForm({
       name: "",
       email: "",
-      phone: "",
-      joined: new Date().toISOString().split("T")[0],
+      password: "",
     });
     setEditingId(null);
   };
@@ -110,7 +135,7 @@ export default function AdminUsers() {
           </button>
         </div>
 
-        {/* Users Table */}
+        {/* Table */}
         <div className="card bg-base-200 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="table">
@@ -118,36 +143,42 @@ export default function AdminUsers() {
                 <tr className="bg-base-300">
                   <th>Nama</th>
                   <th>Email</th>
-                  <th>No. HP</th>
-                  <th>Tergabung</th>
+                  <th>Role</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-base-300">
-                    <td className="font-semibold">{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.phone}</td>
-                    <td>{new Date(user.joined).toLocaleDateString("id-ID")}</td>
-                    <td>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(user)}
-                          className="btn btn-sm btn-ghost text-blue-500"
-                        >
-                          <Icon icon="mdi:pencil" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="btn btn-sm btn-ghost text-red-500"
-                        >
-                          <Icon icon="mdi:trash" />
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan="4" className="text-center py-8">
+                      Loading...
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  users?.data?.map((user) => (
+                    <tr key={user.id} className="hover:bg-base-300">
+                      <td className="font-semibold">{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.role}</td>
+                      <td>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="btn btn-sm btn-ghost text-blue-500"
+                          >
+                            <Icon icon="mdi:pencil" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="btn btn-sm btn-ghost text-red-500"
+                          >
+                            <Icon icon="mdi:trash" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -176,20 +207,15 @@ export default function AdminUsers() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
-                <input
-                  type="tel"
-                  placeholder="No. HP"
-                  className="input input-bordered w-full"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
+
                 {!editingId && (
                   <input
-                    type="date"
+                    type="password"
+                    placeholder="Password"
                     className="input input-bordered w-full"
-                    value={form.joined}
+                    value={form.password}
                     onChange={(e) =>
-                      setForm({ ...form, joined: e.target.value })
+                      setForm({ ...form, password: e.target.value })
                     }
                   />
                 )}
@@ -205,7 +231,11 @@ export default function AdminUsers() {
                 >
                   Batal
                 </button>
-                <button onClick={handleSave} className="btn btn-primary">
+                <button
+                  onClick={handleSave}
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
                   {editingId ? "Update" : "Simpan"}
                 </button>
               </div>

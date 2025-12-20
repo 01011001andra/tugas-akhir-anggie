@@ -1,37 +1,32 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import {
-  createProduct,
-  getProducts,
-  updateProduct,
-  deleteProduct,
-} from "@/services/product.service";
+  createEducation,
+  getEducations,
+  updateEducation,
+  deleteEducation,
+} from "@/services/education.service";
 import { fileToBase64 } from "../../utils/helper";
 
-export default function AdminProducts() {
-  const [products, setProducts] = useState([]);
+export default function AdminEducations() {
+  const [educations, setEducations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     title: "",
-    description: "",
-    stock: "",
-    price: "",
+    content: "",
     image: "", // base64
   });
-
-  const MAX_STOCK = 100000; // contoh
-  const MAX_PRICE = 100000000; // 100 juta
 
   // =======================
   // FETCH
   // =======================
-  const fetchProducts = async () => {
+  const fetchEducations = async () => {
     try {
       setLoading(true);
-      const res = await getProducts();
-      setProducts(res.data);
+      const res = await getEducations();
+      setEducations(res.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -40,15 +35,15 @@ export default function AdminProducts() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchEducations();
   }, []);
 
   // =======================
-  // SAVE
+  // SAVE (CREATE / UPDATE)
   // =======================
   const handleSave = async () => {
-    if (!form.title || !form.price || !form.stock) {
-      alert("Lengkapi semua field wajib");
+    if (!form.title || !form.content) {
+      alert("Judul dan konten wajib diisi");
       return;
     }
 
@@ -57,19 +52,17 @@ export default function AdminProducts() {
 
       const payload = {
         title: form.title,
-        description: form.description,
-        stock: Number(form.stock),
-        price: Number(form.price),
-        image: form.image || null, // base64
+        content: form.content,
+        image: form.image || null,
       };
 
       if (editingId) {
-        await updateProduct(editingId, payload);
+        await updateEducation(editingId, payload);
       } else {
-        await createProduct(payload);
+        await createEducation(payload);
       }
 
-      await fetchProducts();
+      await fetchEducations();
       resetForm();
       setShowModal(false);
     } catch (e) {
@@ -79,39 +72,16 @@ export default function AdminProducts() {
     }
   };
 
-  const handleIntegerChange = (e, field, max) => {
-    const raw = e.target.value;
-
-    // hanya angka
-    if (!/^\d*$/.test(raw)) return;
-
-    // kosong boleh (biar bisa hapus)
-    if (raw === "") {
-      setForm((prev) => ({ ...prev, [field]: "" }));
-      return;
-    }
-
-    const num = Number(raw);
-
-    // ❌ kalau lebih dari max → TOLAK (jangan set state)
-    if (num > max) return;
-
-    // ✅ aman
-    setForm((prev) => ({ ...prev, [field]: raw }));
-  };
-
   // =======================
   // EDIT
   // =======================
-  const handleEdit = (product) => {
+  const handleEdit = (edu) => {
     setForm({
-      title: product.title,
-      description: product.description || "",
-      stock: product.stock.toString(),
-      price: product.price.toString(),
-      image: product.image || "",
+      title: edu.title,
+      content: edu.content,
+      image: edu.image || "",
     });
-    setEditingId(product.id);
+    setEditingId(edu.id);
     setShowModal(true);
   };
 
@@ -119,12 +89,12 @@ export default function AdminProducts() {
   // DELETE
   // =======================
   const handleDelete = async (id) => {
-    if (!window.confirm("Yakin hapus produk ini?")) return;
+    if (!window.confirm("Yakin ingin menghapus education ini?")) return;
 
     try {
       setLoading(true);
-      await deleteProduct(id);
-      await fetchProducts();
+      await deleteEducation(id);
+      await fetchEducations();
     } catch (e) {
       console.error(e);
     } finally {
@@ -135,16 +105,14 @@ export default function AdminProducts() {
   const resetForm = () => {
     setForm({
       title: "",
-      description: "",
-      stock: "",
-      price: "",
+      content: "",
       image: "",
     });
     setEditingId(null);
   };
 
   // =======================
-  // IMAGE PICK
+  // IMAGE PICK (BASE64)
   // =======================
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -161,10 +129,10 @@ export default function AdminProducts() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">
-              <Icon icon="mdi:package-variant" className="inline mr-2" />
-              Kelola Produk
+              <Icon icon="mdi:school" className="inline mr-2" />
+              Education
             </h1>
-            <p>Total: {products.length} produk</p>
+            <p>Total: {educations.length} data</p>
           </div>
           <button
             className="btn btn-primary"
@@ -174,7 +142,7 @@ export default function AdminProducts() {
             }}
           >
             <Icon icon="mdi:plus" />
-            Tambah Produk
+            Tambah Education
           </button>
         </div>
 
@@ -183,39 +151,35 @@ export default function AdminProducts() {
           <table className="table">
             <thead>
               <tr>
-                <th>Produk</th>
-                <th>Stock</th>
-                <th>Harga</th>
+                <th>Education</th>
+                <th>Konten</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-8">
-                    <span className="loading loading-spinner loading-md mr-2" />
-                    Memuat produk...
+                  <td colSpan="3" className="text-center py-8">
+                    <span className="loading loading-spinner mr-2" />
+                    Memuat data...
                   </td>
                 </tr>
-              ) : products.length === 0 ? (
+              ) : educations.length === 0 ? (
                 <tr>
-                  <td colSpan="4">
-                    {/* EMPTY STATE */}
+                  <td colSpan="3">
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                       <div className="mb-4 rounded-full bg-base-300 p-4">
                         <Icon
-                          icon="mdi:package-variant-remove"
+                          icon="mdi:school-outline"
                           className="text-4xl text-base-content/60"
                         />
                       </div>
-
                       <h3 className="text-lg font-semibold mb-1">
-                        Belum ada produk
+                        Belum ada education
                       </h3>
                       <p className="text-sm text-base-content/60 mb-4">
-                        Tambahkan produk pertama untuk mulai mengelola katalog
+                        Tambahkan education pertama
                       </p>
-
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => {
@@ -224,19 +188,19 @@ export default function AdminProducts() {
                         }}
                       >
                         <Icon icon="mdi:plus" className="mr-1" />
-                        Tambah Produk
+                        Tambah Education
                       </button>
                     </div>
                   </td>
                 </tr>
               ) : (
-                products.map((p) => (
-                  <tr key={p.id}>
+                educations.map((edu) => (
+                  <tr key={edu.id}>
                     <td>
                       <div className="flex gap-3 items-center">
-                        {p.image ? (
+                        {edu.image ? (
                           <img
-                            src={p.image}
+                            src={edu.image}
                             className="w-12 h-12 rounded object-cover"
                           />
                         ) : (
@@ -247,27 +211,19 @@ export default function AdminProducts() {
                             />
                           </div>
                         )}
-                        <div>
-                          <div className="font-semibold">{p.title}</div>
-                          <div className="text-sm opacity-60">
-                            {p.description || "Tanpa deskripsi"}
-                          </div>
-                        </div>
+                        <span className="font-semibold">{edu.title}</span>
                       </div>
                     </td>
-                    <td>{p.stock}</td>
-                    <td className="text-primary font-semibold">
-                      Rp {p.price.toLocaleString()}
-                    </td>
+                    <td className="max-w-xs truncate">{edu.content}</td>
                     <td>
                       <button
-                        onClick={() => handleEdit(p)}
+                        onClick={() => handleEdit(edu)}
                         className="btn btn-sm btn-ghost text-blue-500"
                       >
                         <Icon icon="mdi:pencil" />
                       </button>
                       <button
-                        onClick={() => handleDelete(p.id)}
+                        onClick={() => handleDelete(edu.id)}
                         className="btn btn-sm btn-ghost text-red-500"
                       >
                         <Icon icon="mdi:trash" />
@@ -283,42 +239,27 @@ export default function AdminProducts() {
         {/* Modal */}
         {showModal && (
           <div className="modal modal-open">
-            <div className="modal-box">
+            <div className="modal-box max-w-lg">
               <h3 className="font-bold text-lg mb-4">
-                {editingId ? "Edit Produk" : "Tambah Produk"}
+                {editingId ? "Edit Education" : "Tambah Education"}
               </h3>
 
               <div className="space-y-3">
                 <input
                   className="input input-bordered w-full"
-                  placeholder="Nama Produk"
+                  placeholder="Judul Education"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
+
                 <textarea
                   className="textarea textarea-bordered w-full"
-                  placeholder="Deskripsi"
-                  value={form.description}
+                  placeholder="Konten Education"
+                  rows={5}
+                  value={form.content}
                   onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
+                    setForm({ ...form, content: e.target.value })
                   }
-                />
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  className="input input-bordered w-full"
-                  placeholder="Stock"
-                  value={form.stock}
-                  onChange={(e) => handleIntegerChange(e, "stock", MAX_STOCK)}
-                />
-
-                <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  className="input input-bordered w-full"
-                  placeholder="Harga"
-                  value={form.price}
-                  onChange={(e) => handleIntegerChange(e, "price", MAX_PRICE)}
                 />
 
                 <input
@@ -327,6 +268,7 @@ export default function AdminProducts() {
                   className="file-input file-input-bordered w-full"
                   onChange={handleImageChange}
                 />
+
                 {form.image && (
                   <img
                     src={form.image}

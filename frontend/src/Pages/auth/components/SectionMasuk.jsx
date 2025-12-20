@@ -1,18 +1,14 @@
 import imageLeft from "../../../assets/background.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEye,
-  faEyeSlash,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { login } from "../../../services/auth.service";
 
 export default function SectionMasuk() {
   const [values, setValues] = useState({
-    email: "",
-    password: "",
+    email: "admin@gmail.com",
+    password: "admin123",
   });
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,16 +19,9 @@ export default function SectionMasuk() {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  // Fungsi untuk toggle password
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Validasi input di frontend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi input
     if (!values.email || !values.password) {
       setErrorMessage("Email dan password tidak boleh kosong!");
       return;
@@ -42,111 +31,107 @@ export default function SectionMasuk() {
     setErrorMessage("");
 
     try {
-      const response = await axios.post(
-        "http://localhost:4000/auth/masuk",
-        values
-      );
-      if (response.status === 201) {
-        localStorage.setItem("token", response.data.token);
-        navigate("/MainHero"); // Navigasi setelah berhasil login
-      }
+      const res = await login(values);
+
+      localStorage.setItem("accessToken", res.data.tokens.access.token);
+      localStorage.setItem("refreshToken", res.data.tokens.refresh.token);
+
+      navigate("/admin/dashboard");
     } catch (err) {
-      console.error(err.response?.data?.message || "Login gagal");
       setErrorMessage(err.response?.data?.message || "Login gagal");
     } finally {
-      setLoading(false); // Berhenti loading
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Left Section */}
-      <div className="w-1/2 hidden md:block">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      {/* LEFT IMAGE */}
+      <div className="hidden md:block">
         <img
           src={imageLeft}
-          alt="imageLeft"
+          alt="background"
           className="w-full h-full object-cover"
         />
       </div>
 
-      {/* Right Section */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gray-100 px-8">
-        <div className="max-w-md w-full">
-          <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">
-            Welcome to <span className="text-green-600">VertiGrow</span>
-          </h1>
+      {/* RIGHT FORM */}
+      <div className="flex items-center justify-center bg-base-200 px-6">
+        <div className="card w-full max-w-md bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h2 className="text-3xl font-bold text-center">
+              Welcome to <span className="text-success">VertiGrow</span>
+            </h2>
 
-          {/* Pesan Error */}
-          {errorMessage && (
-            <div className="text-red-600 mb-4 text-center">{errorMessage}</div>
-          )}
+            {/* ERROR */}
+            {errorMessage && (
+              <div className="alert alert-error mt-4">
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
-          {/* Form Login */}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <div className="flex items-center border rounded-lg bg-gray-200">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              {/* EMAIL */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Email</span>
+                </label>
                 <input
-                  id="email"
                   type="email"
                   name="email"
-                  placeholder="Email anda"
-                  className="w-full bg-transparent py-2 px-2 text-gray-700 outline-none"
+                  value={values.email}
                   onChange={handleChanges}
+                  className="input input-bordered"
                 />
               </div>
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+              {/* PASSWORD */}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Kata Sandi</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={values.password}
+                    onChange={handleChanges}
+                    className="input input-bordered w-full pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                  </button>
+                </div>
+              </div>
+
+              {/* BUTTON */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-success w-full mt-4 text-white"
               >
-                Kata Sandi
-              </label>
-              <div className="flex items-center border rounded-lg bg-gray-200">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"} // Toggle password visibility
-                  name="password"
-                  placeholder="Kata sandi anda"
-                  className="w-full bg-transparent py-2 px-2 text-gray-700 outline-none"
-                  onChange={handleChanges}
-                />
-                <span
-                  onClick={togglePassword} // Click to toggle password visibility
-                  className="cursor-pointer px-3 text-gray-500"
-                >
-                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                </span>
-              </div>
-            </div>
+                {loading ? (
+                  <>
+                    <span className="loading loading-spinner" />
+                    Memproses...
+                  </>
+                ) : (
+                  "Masuk"
+                )}
+              </button>
+            </form>
 
-            {/* Tombol Masuk */}
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white font-semibold py-2 rounded-lg text-lg hover:bg-green-700"
-              disabled={loading}
-            >
-              {loading ? (
-                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" /> // Loading spinner
-              ) : (
-                "Masuk"
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-gray-600 mt-6">
-            Tidak Punya Akun?{" "}
-            <a href="/Daftar" className="text-orange-600 font-medium">
-              Daftar
-            </a>
-          </p>
+            <p className="text-center text-sm mt-6">
+              Tidak punya akun?{" "}
+              <a href="/Daftar" className="link link-warning font-semibold">
+                Daftar
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,20 +1,7 @@
-import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-
-// Pages
-import Home from "./pages/public/home";
-import About from "./pages/public/tentang";
-import Layanan from "./pages/public/layanan";
-import MainHero from "./pages/public/mainHero";
-import ProductList from "./pages/public/ProductList";
-import Cart from "./pages/public/Cart";
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminProducts from "./pages/admin/Products";
-import AdminUsers from "./pages/admin/Users";
-import AdminNotifications from "./pages/admin/Notifications";
-import AdminSidebar from "./components/AdminSidebar";
-import Daftar from "./pages/auth/Daftar";
-import Masuk from "./pages/auth/Masuk";
+import AppRouter from "./routes";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   useEffect(() => {
@@ -83,50 +70,17 @@ function App() {
   }, []);
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/daftar" element={<Daftar />} />
-      <Route path="/masuk" element={<Masuk />} />
-      <Route path="/tentang" element={<About />} />
-      <Route path="/layanan" element={<Layanan />} />
-      <Route path="/MainHero" element={<MainHero />} />
-      <Route path="/products" element={<ProductList />} />
-      <Route path="/cart" element={<Cart />} />
-
-      {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <AdminSidebar>
-            <AdminDashboard />
-          </AdminSidebar>
-        }
+    <>
+      <AppRouter />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        pauseOnHover
+        closeOnClick
+        draggable
+        theme="colored"
       />
-      <Route
-        path="/admin/products"
-        element={
-          <AdminSidebar>
-            <AdminProducts />
-          </AdminSidebar>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminSidebar>
-            <AdminUsers />
-          </AdminSidebar>
-        }
-      />
-      <Route
-        path="/admin/notifications"
-        element={
-          <AdminSidebar>
-            <AdminNotifications />
-          </AdminSidebar>
-        }
-      />
-    </Routes>
+    </>
   );
 }
 
