@@ -105,7 +105,7 @@ function App() {
         />
         <Route
           path="/admin/products"
-          element={
+          element={ 
             <AdminSidebar>
               <AdminProducts />
             </AdminSidebar>
