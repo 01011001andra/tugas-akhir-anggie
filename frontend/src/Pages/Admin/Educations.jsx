@@ -250,6 +250,7 @@ export default function AdminEducations() {
                   placeholder="Judul Education"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  required
                 />
 
                 <textarea
@@ -260,6 +261,7 @@ export default function AdminEducations() {
                   onChange={(e) =>
                     setForm({ ...form, content: e.target.value })
                   }
+                  required
                 />
 
                 <input
