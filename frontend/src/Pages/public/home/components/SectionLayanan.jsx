@@ -1,7 +1,7 @@
 import Card from 'react-bootstrap/Card';
-import Edukasi from '../../assets/Layanan/Edukasi.png';
-import Chatbot from '../../assets/Layanan/Chatbot.jpg';
-import Manajemen from '../../assets/Layanan/Manajemen.png';
+import Edukasi from '../../../../assets/Layanan/Edukasi.png';
+import Chatbot from '../../../../assets/Layanan/Chatbot.jpg';
+import Manajemen from '../../../../assets/Layanan/Manajemen.png';
 
 function SectionLayanan() {
   return (

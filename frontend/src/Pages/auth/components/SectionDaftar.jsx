@@ -1,5 +1,5 @@
-import imageLeft from "../../assets/background.png";
-import React, { useState } from "react";
+import imageLeft from "../../../assets/background.png";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -1,4 +1,4 @@
-import Chatbot from "../../assets/Layanan/Chatbot.jpg";
+import Chatbot from "../../../../assets/Layanan/Chatbot.jpg";
 
 export default function SectionLayananChatbot() {
   return (

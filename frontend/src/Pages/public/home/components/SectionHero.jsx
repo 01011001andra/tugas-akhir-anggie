@@ -1,4 +1,4 @@
-import Hero from '../../assets/Vertikultur.png';
+import Hero from '../../../../assets/Vertikultur.png';
 
 export default function SectionHero() {
   return (

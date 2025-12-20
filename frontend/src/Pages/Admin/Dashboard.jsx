@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
-import AdminSidebar from "../../Components/AdminSidebar";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -66,7 +65,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-base-100">
-
       <main className="flex-1">
         <div className="p-8">
           {/* Header */}

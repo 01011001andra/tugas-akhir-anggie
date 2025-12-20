@@ -1,4 +1,4 @@
-import Manajemen from '../../assets/Layanan/Manajemen.png';
+import Manajemen from '../../../../assets/Layanan/Manajemen.png';
 
 export default function SectionLayananManajemen() {
   return (

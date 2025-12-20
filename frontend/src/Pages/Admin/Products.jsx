@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import AdminSidebar from "../../Components/AdminSidebar";
+import AdminSidebar from "../../components/AdminSidebar";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -91,7 +91,6 @@ export default function AdminProducts() {
 
   return (
     <div className="flex min-h-screen bg-base-100">
-
       <main className="flex-1 p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">

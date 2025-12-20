@@ -1,5 +1,4 @@
-import React from "react";
-import SectionDaftar from "../Sections/Auth/SectionDaftar";
+import SectionDaftar from "./components/SectionDaftar";
 
 export default function Daftar() {
   return (
