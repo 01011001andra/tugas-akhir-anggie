@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../../../components/Navbar";
-import Footer from "../../../../components/Footer";
+import Navbar from "../../../components/Navbar";
+import Footer from "../../../components/Footer";
 import {
   getMyCart,
   updateCartItemQty,
   removeCartItem,
   clearMyCart,
-} from "../../../../services/cart.service";
-import { useCartStore } from "../../../../stores/cart.store";
+} from "../../../services/cart.service";
+import { useCartStore } from "../../../stores/cart.store";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -156,7 +156,7 @@ export default function Cart() {
             <span className="loading loading-spinner loading-lg" />
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-16 flex items-center justify-center flex-col">
             <Icon icon="mdi:cart-off" className="text-6xl text-base-300 mb-4" />
             <p className="text-lg text-base-600 mb-4">Keranjang Anda kosong</p>
             <button

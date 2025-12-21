@@ -2,27 +2,29 @@ import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import Navbar from "../../../components/Navbar";
 import Footer from "../../../components/Footer";
+import { useCartStore } from "../../../stores/cart.store";
 import { getProducts } from "../../../services/product.service";
 import { addCartItem } from "../../../services/cart.service";
-import { useCartStore } from "../../../stores/cart.store";
+import { Link } from "react-router-dom";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState("");
   const [sortMode, setSortMode] = useState("relevan");
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(8);
   const [loading, setLoading] = useState(true);
   const [addingId, setAddingId] = useState(null);
 
-  const addLocalItem = useCartStore((s) => s.addItem);
+  const addItem = useCartStore((s) => s.addItem);
 
   // =====================
   // IMAGE HANDLER
   // =====================
   const getImageSrc = (base64) => {
-    if (!base64 || typeof base64 !== "string" || base64.length < 50)
+    if (!base64 || typeof base64 !== "string" || base64.length < 50) {
       return null;
+    }
     if (base64.startsWith("data:image")) return base64;
     return `data:image/png;base64,${base64}`;
   };
@@ -34,8 +36,8 @@ export default function ProductList() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await getProducts();
-        setProducts(res?.data || []);
+        const result = await getProducts();
+        setProducts(result?.data || []);
       } catch (err) {
         console.error(err);
         setProducts([]);
@@ -43,6 +45,7 @@ export default function ProductList() {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
@@ -105,7 +108,7 @@ export default function ProductList() {
   }, [query, sortMode]);
 
   // =====================
-  // ADD TO CART (API + STORE)
+  // ADD TO CART (API FIRST)
   // =====================
   const handleAddToCart = async (product) => {
     if (product.stock <= 0) return;
@@ -113,13 +116,14 @@ export default function ProductList() {
     try {
       setAddingId(product.id);
 
-      // 1️⃣ simpan ke backend
+      // 1️⃣ simpan ke backend (cart + cartItem)
       await addCartItem(product.id, 1);
 
-      // 2️⃣ update local store (BIAR NAVBAR LANGSUNG UPDATE)
-      addLocalItem(product);
+      // 2️⃣ optimistic update ke store
+      addItem(product);
     } catch (err) {
-      console.error(err);
+      console.error("Gagal add to cart:", err);
+      alert("Gagal menambahkan ke keranjang");
     } finally {
       setAddingId(null);
     }
@@ -135,8 +139,8 @@ export default function ProductList() {
       <main className="max-w-7xl mx-auto px-4 py-8 mt-20">
         {/* HEADER */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Icon icon="mdi:leaf" className="text-success" />
+          <h1 className="text-3xl font-bold">
+            <Icon icon="mdi:leaf" className="inline-block mr-2 text-success" />
             Produk
           </h1>
           <p className="text-base-600">Daftar produk yang tersedia</p>
@@ -156,7 +160,7 @@ export default function ProductList() {
               />
             </label>
 
-            <div className="ml-auto">
+            <div className="ml-auto flex gap-2">
               <select
                 className="select select-bordered select-sm"
                 value={sortMode}
@@ -168,69 +172,99 @@ export default function ProductList() {
                 <option value="name-asc">Nama A–Z</option>
                 <option value="name-desc">Nama Z–A</option>
               </select>
+
+              <select
+                className="select select-bordered select-sm"
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                {[8, 12, 24].map((n) => (
+                  <option key={n} value={n}>
+                    {n}/hal
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
         {/* CONTENT */}
         {loading ? (
-          <div className="flex justify-center py-20">
+          <div className="text-center py-20">
             <span className="loading loading-spinner loading-lg" />
           </div>
+        ) : paged.length === 0 ? (
+          <div className="text-center py-20">
+            <Icon
+              icon="mdi:package-variant-remove"
+              className="text-6xl text-base-300 mb-4"
+            />
+            <p className="text-xl text-base-600">Produk tidak ditemukan</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {paged.map((product) => {
               const imageSrc = getImageSrc(product.image);
               const isAdding = addingId === product.id;
 
               return (
-                <div
+                <Link
+                  to={`/products/${product.id}`}
                   key={product.id}
-                  className="card bg-base-200 shadow hover:shadow-lg transition"
+                  className="card bg-base-200 shadow-xl hover:shadow-2xl transition"
                 >
-                  <figure className="h-48 bg-base-300 flex items-center justify-center">
+                  <figure className="p-4 flex items-center justify-center h-48 bg-base-300 rounded-xl">
                     {imageSrc ? (
                       <img
                         src={imageSrc}
                         alt={product.title}
-                        className="h-full w-full object-cover"
+                        className="rounded-xl h-full w-full object-cover"
                       />
                     ) : (
-                      <Icon
-                        icon="mdi:image-off-outline"
-                        className="text-5xl text-base-400"
-                      />
+                      <div className="flex flex-col items-center justify-center text-base-400">
+                        <Icon
+                          icon="mdi:image-off-outline"
+                          className="text-5xl mb-2"
+                        />
+                        <span className="text-sm">No Image</span>
+                      </div>
                     )}
                   </figure>
 
                   <div className="card-body">
-                    <h2 className="font-semibold line-clamp-2">
+                    <h2 className="card-title text-base line-clamp-2">
                       {product.title}
                     </h2>
 
-                    <p className="text-primary font-bold">
+                    <p className="text-sm text-base-500">
+                      Stok: {product.stock?.toLocaleString() ?? 0}
+                    </p>
+
+                    <p className="text-2xl font-bold text-primary">
                       {rupiah(product.price)}
                     </p>
 
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      disabled={isAdding || product.stock <= 0}
-                      className="btn btn-primary btn-sm w-full"
-                    >
-                      {isAdding ? (
-                        <>
-                          <Icon icon="mdi:loading" className="animate-spin" />
-                          Menambahkan…
-                        </>
-                      ) : (
-                        <>
-                          <Icon icon="mdi:shopping-cart" />
-                          Tambah ke Keranjang
-                        </>
-                      )}
-                    </button>
+                    <div className="card-actions mt-3">
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="btn btn-primary btn-sm w-full"
+                        disabled={product.stock <= 0 || isAdding}
+                      >
+                        {isAdding ? (
+                          <>
+                            <Icon icon="mdi:loading" className="animate-spin" />
+                            Menambahkan...
+                          </>
+                        ) : (
+                          <>
+                            <Icon icon="mdi:shopping-cart" />
+                            Tambah ke Keranjang
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -238,7 +272,7 @@ export default function ProductList() {
 
         {/* PAGINATION */}
         {totalPages > 1 && (
-          <div className="join grid grid-flow-col gap-2 w-fit mx-auto mt-10">
+          <div className="join grid grid-flow-col gap-2 w-fit mx-auto mb-8">
             <button
               className="btn btn-outline join-item"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
