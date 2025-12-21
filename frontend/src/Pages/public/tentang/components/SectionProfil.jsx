@@ -2,7 +2,10 @@ import Profil from "../../../../assets/Vertikultur.png";
 
 export default function SectionProfil() {
   return (
-    <section className="container mx-auto mb-20 flex flex-col lg:flex-row-reverse items-center py-16 gap-10 mt-36 px-4 lg:px-0">
+    <section
+      className="container mx-auto mb-20 flex flex-col lg:flex-row-reverse items-center py-16 gap-10 px-4 lg:px-0"
+      data-aos="fade-up"
+    >
       {/* Gambar profil di sebelah kanan */}
       <img
         src={Profil}

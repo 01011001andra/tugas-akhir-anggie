@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import Logo from "../assets/Logo/Logo Vertigrow Blok.png";
 import { useSessionStore } from "../stores/session.store";
@@ -45,7 +45,7 @@ export default function Navbar() {
 
   return (
     <div
-      className={`navbar fixed top-0 z-50 bg-base-100 px-4 transition-shadow ${
+      className={`navbar container mx-auto bg-base-100 px-4 transition-shadow ${
         scrolling ? "shadow-md" : ""
       }`}
     >
@@ -173,8 +173,8 @@ export default function Navbar() {
               <div className="divider my-1" />
 
               <li>
-                <a
-                  onClick={() => navigate("/admin/dashboard")}
+                <Link
+                  to={"/admin/dashboard"}
                   className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-base-200 transition"
                 >
                   <Icon
@@ -182,7 +182,7 @@ export default function Navbar() {
                     className="text-lg text-primary"
                   />
                   <span className="font-medium">Dashboard</span>
-                </a>
+                </Link>
               </li>
 
               <li>

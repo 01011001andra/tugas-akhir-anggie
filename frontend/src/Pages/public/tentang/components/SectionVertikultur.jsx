@@ -2,7 +2,7 @@ import Vertikultur from "../../../../assets/Layanan/Chatbot.jpg";
 
 export default function SectionVertikultur() {
   return (
-    <section className="bg-[#387F39] py-16">
+    <section className="bg-[#387F39] py-16" data-aos="fade-up">
       {/* Container */}
       <div className="container mx-auto flex flex-col lg:flex-row items-center gap-16 text-white px-4">
         {/* Teks Deskripsi */}

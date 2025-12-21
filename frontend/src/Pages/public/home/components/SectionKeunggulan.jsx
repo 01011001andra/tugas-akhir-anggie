@@ -1,7 +1,7 @@
-import Card from 'react-bootstrap/Card';
-import Edukasi from '../../../../assets/Layanan/Edukasi.png';
-import Chatbot from '../../../../assets/Layanan/Chatbot.jpg';
-import Manajemen from '../../../../assets/Layanan/Manajemen.png';
+import Card from "react-bootstrap/Card";
+import Edukasi from "../../../../assets/Layanan/Edukasi.png";
+import Chatbot from "../../../../assets/Layanan/Chatbot.jpg";
+import Manajemen from "../../../../assets/Layanan/Manajemen.png";
 
 export default function SectionKeunggulan() {
   return (
@@ -15,11 +15,14 @@ export default function SectionKeunggulan() {
         {/* Kontainer Kartu */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {/* Kartu 1 */}
-          <Card className="relative overflow-hidden rounded-lg">
-            <Card.Img 
-              variant="top" 
-              src={Edukasi} 
-              className="h-full w-full object-cover rounded-t-lg" 
+          <Card
+            className="relative overflow-hidden rounded-lg"
+            data-aos="fade-up"
+          >
+            <Card.Img
+              variant="top"
+              src={Edukasi}
+              className="h-full w-full object-cover rounded-t-lg"
             />
             {/* Overlay Gradasi */}
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black opacity-70"></div>
@@ -31,11 +34,14 @@ export default function SectionKeunggulan() {
           </Card>
 
           {/* Kartu 2 */}
-          <Card className="relative overflow-hidden rounded-lg">
-            <Card.Img 
-              variant="top" 
-              src={Manajemen} 
-              className="h-full w-full object-cover rounded-t-lg" 
+          <Card
+            className="relative overflow-hidden rounded-lg"
+            data-aos="fade-up"
+          >
+            <Card.Img
+              variant="top"
+              src={Manajemen}
+              className="h-full w-full object-cover rounded-t-lg"
             />
             {/* Overlay Gradasi */}
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black opacity-70"></div>
@@ -47,11 +53,14 @@ export default function SectionKeunggulan() {
           </Card>
 
           {/* Kartu 3 */}
-          <Card className="relative overflow-hidden rounded-lg">
-            <Card.Img 
-              variant="top" 
-              src={Chatbot} 
-              className="h-full w-full object-cover rounded-t-lg" 
+          <Card
+            className="relative overflow-hidden rounded-lg"
+            data-aos="fade-up"
+          >
+            <Card.Img
+              variant="top"
+              src={Chatbot}
+              className="h-full w-full object-cover rounded-t-lg"
             />
             {/* Overlay Gradasi */}
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black opacity-70"></div>

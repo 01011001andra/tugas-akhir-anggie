@@ -2,9 +2,12 @@ import Edukasi from "../../../../assets/Layanan/Edukasi.png";
 
 export default function SectionLayananEdukasi() {
   return (
-    <section className="container mx-auto flex flex-col md:flex-row items-center justify-between py-20 gap-16 mt-36">
+    <section className="container mx-auto flex flex-col md:flex-row items-center justify-between py-20 gap-16">
       {/* Image Section */}
-      <div className="w-full md:w-1/2 overflow-hidden rounded-lg shadow-lg">
+      <div
+        className="w-full md:w-1/2 overflow-hidden rounded-lg shadow-lg"
+        data-aos="fade-up"
+      >
         <img
           src={Edukasi}
           alt="Edukasi Vertikultur"
@@ -13,7 +16,7 @@ export default function SectionLayananEdukasi() {
       </div>
 
       {/* Text Section */}
-      <div className="w-full md:w-1/2 flex flex-col gap-8">
+      <div className="w-full md:w-1/2 flex flex-col gap-8" data-aos="fade-up">
         <p className="text-3xl md:text-4xl font-semibold text-green-600 leading-tight md:text-left">
           Edukasi Vertikultur
         </p>

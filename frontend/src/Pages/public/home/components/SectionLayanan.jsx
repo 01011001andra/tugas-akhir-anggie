@@ -1,21 +1,24 @@
-import Card from 'react-bootstrap/Card';
-import Edukasi from '../../../../assets/Layanan/Edukasi.png';
-import Chatbot from '../../../../assets/Layanan/Chatbot.jpg';
-import Manajemen from '../../../../assets/Layanan/Manajemen.png';
+import Card from "react-bootstrap/Card";
+import Edukasi from "../../../../assets/Layanan/Edukasi.png";
+import Chatbot from "../../../../assets/Layanan/Chatbot.jpg";
+import Manajemen from "../../../../assets/Layanan/Manajemen.png";
 
 function SectionLayanan() {
   return (
     <section className="flex justify-center my-28 px-6">
       <div className="w-full max-w-7xl">
         {/* Judul */}
-        <p className="font-semibold text-center text-2xl md:text-3xl text-neutral-800 mb-10">
+        <p
+          className="font-semibold text-center text-2xl md:text-3xl text-neutral-800 mb-10"
+          data-aos="fade-up"
+        >
           Layanan Kami
         </p>
 
         {/* Kontainer Kartu */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Kartu 1 */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg" data-aos="fade-up">
             <Card.Img
               variant="top"
               src={Edukasi}
@@ -35,7 +38,7 @@ function SectionLayanan() {
           </Card>
 
           {/* Kartu 2 */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg" data-aos="fade-up">
             <Card.Img
               variant="top"
               src={Chatbot}
@@ -55,7 +58,7 @@ function SectionLayanan() {
           </Card>
 
           {/* Kartu 3 */}
-          <Card className="shadow-lg">
+          <Card className="shadow-lg" data-aos="fade-up">
             <Card.Img
               variant="top"
               src={Manajemen}

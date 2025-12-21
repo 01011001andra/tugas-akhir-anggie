@@ -10,6 +10,7 @@ import Daftar from "../pages/auth/Daftar";
 import Masuk from "../pages/auth/Masuk";
 import PublicRoute from "./PublicRoute";
 import ProductDetail from "../pages/public/product/ProductDetail";
+import MainHero from "../pages/public/mainHero";
 
 export default function PublicRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function PublicRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/tentang" element={<About />} />
       <Route path="/layanan" element={<Layanan />} />
+      <Route path="/mainhero" element={<MainHero />} />
       {/* PRODUCTS */}
       <Route path="/products" element={<ProductList />} />
       <Route path="/products/:id" element={<ProductDetail />} />{" "}

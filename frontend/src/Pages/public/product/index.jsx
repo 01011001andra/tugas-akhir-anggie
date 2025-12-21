@@ -5,7 +5,7 @@ import Footer from "../../../components/Footer";
 import { useCartStore } from "../../../stores/cart.store";
 import { getProducts } from "../../../services/product.service";
 import { addCartItem } from "../../../services/cart.service";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
@@ -15,6 +15,7 @@ export default function ProductList() {
   const [pageSize, setPageSize] = useState(8);
   const [loading, setLoading] = useState(true);
   const [addingId, setAddingId] = useState(null);
+  const navigate = useNavigate();
 
   const addItem = useCartStore((s) => s.addItem);
 
@@ -123,7 +124,6 @@ export default function ProductList() {
       addItem(product);
     } catch (err) {
       console.error("Gagal add to cart:", err);
-      alert("Gagal menambahkan ke keranjang");
     } finally {
       setAddingId(null);
     }
@@ -136,7 +136,7 @@ export default function ProductList() {
     <div className="min-h-screen bg-base-100">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 mt-20">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* HEADER */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">
@@ -194,7 +194,7 @@ export default function ProductList() {
             <span className="loading loading-spinner loading-lg" />
           </div>
         ) : paged.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center flex flex-col items-center justify-center py-20">
             <Icon
               icon="mdi:package-variant-remove"
               className="text-6xl text-base-300 mb-4"
@@ -208,10 +208,13 @@ export default function ProductList() {
               const isAdding = addingId === product.id;
 
               return (
-                <Link
-                  to={`/products/${product.id}`}
+                <div
+                  data-aos="fade-up"
+                  onClick={() => {
+                    navigate(`/products/${product.id}`);
+                  }}
                   key={product.id}
-                  className="card bg-base-200 shadow-xl hover:shadow-2xl transition"
+                  className="card cursor-pointer bg-base-200 shadow-xl hover:shadow-2xl transition"
                 >
                   <figure className="p-4 flex items-center justify-center h-48 bg-base-300 rounded-xl">
                     {imageSrc ? (
@@ -246,7 +249,10 @@ export default function ProductList() {
 
                     <div className="card-actions mt-3">
                       <button
-                        onClick={() => handleAddToCart(product)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product);
+                        }}
                         className="btn btn-primary btn-sm w-full"
                         disabled={product.stock <= 0 || isAdding}
                       >
@@ -264,7 +270,7 @@ export default function ProductList() {
                       </button>
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>

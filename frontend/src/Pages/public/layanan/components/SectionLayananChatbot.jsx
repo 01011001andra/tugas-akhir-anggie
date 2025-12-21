@@ -2,9 +2,12 @@ import Chatbot from "../../../../assets/Layanan/Chatbot.jpg";
 
 export default function SectionLayananChatbot() {
   return (
-    <section className="container mx-auto flex flex-col md:flex-row items-center justify-between py-20 gap-16 mt-36">
+    <section className="container mx-auto flex flex-col md:flex-row items-center justify-between py-20 gap-16">
       {/* Image Section */}
-      <div className="w-full md:w-1/2 overflow-hidden rounded-lg">
+      <div
+        className="w-full md:w-1/2 overflow-hidden rounded-lg"
+        data-aos="fade-up"
+      >
         <img
           src={Chatbot}
           alt="Chatbot AI"
@@ -13,7 +16,7 @@ export default function SectionLayananChatbot() {
       </div>
 
       {/* Text Section */}
-      <div className="w-full md:w-1/2 flex flex-col gap-6">
+      <div className="w-full md:w-1/2 flex flex-col gap-6" data-aos="fade-up">
         <h2 className="text-3xl md:text-4xl font-semibold text-green-600  md:text-left">
           Chatbot AI
         </h2>
