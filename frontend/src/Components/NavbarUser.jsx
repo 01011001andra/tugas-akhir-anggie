@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { logout } from "../services/auth.service";
+import { useCartStore } from "../stores/cart.store";
 
 export default function NavbarUser() {
   const navigate = useNavigate();
+  const totalQty = useCartStore((s) => s.totalQty());
+
 
   const handleLogout = async () => {
     try {

@@ -1,55 +1,30 @@
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 import AdminDashboard from "../pages/admin/Dashboard";
 import AdminProducts from "../pages/admin/Products";
 import AdminUsers from "../pages/admin/Users";
 import AdminNotifications from "../pages/admin/Notifications";
-import AdminSidebar from "../components/AdminSidebar";
 import AdminEducations from "../pages/admin/Educations";
+import AdminSidebar from "../components/AdminSidebar";
 
 export default function AdminRoutes() {
   return (
     <Routes>
       <Route
-        path="/admin/dashboard"
+        path="/admin/*"
         element={
-          <AdminSidebar>
-            <AdminDashboard />
-          </AdminSidebar>
+          <ProtectedRoute>
+            <AdminSidebar />
+          </ProtectedRoute>
         }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <AdminSidebar>
-            <AdminProducts />
-          </AdminSidebar>
-        }
-      />
-      <Route
-        path="/admin/educations"
-        element={
-          <AdminSidebar>
-            <AdminEducations />
-          </AdminSidebar>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <AdminSidebar>
-            <AdminUsers />
-          </AdminSidebar>
-        }
-      />
-      <Route
-        path="/admin/notifications"
-        element={
-          <AdminSidebar>
-            <AdminNotifications />
-          </AdminSidebar>
-        }
-      />
+      >
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="educations" element={<AdminEducations />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="notifications" element={<AdminNotifications />} />
+      </Route>
     </Routes>
   );
 }

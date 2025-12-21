@@ -25,7 +25,7 @@ model User {
   tokens          Token[]
   review          Review[]
   transaction     Transaction[]
-  cart            Cart[]
+  cart        Cart?
   education       Education[]
 }
 
@@ -54,27 +54,54 @@ model Education {
 }
 
 model Product {
-  id          String    @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String
   stock       Int
   price       Int
   image       String?
 
+  cartItems   CartItem[]
+  review      Review[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  review      Review[]
 }
+
 
 model Cart {
-  id          String    @id @default(uuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  items     CartItem[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId]) // 1 user = 1 cart aktif
 }
+
+model CartItem {
+  id         String   @id @default(uuid())
+
+  cartId     String
+  cart       Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+
+  quantity   Int
+
+  price      Int      
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+
 
 model Transaction {
   id            String    @id @default(uuid())

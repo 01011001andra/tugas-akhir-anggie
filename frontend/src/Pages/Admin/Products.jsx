@@ -13,27 +13,42 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
   const [form, setForm] = useState({
     title: "",
     description: "",
     stock: "",
     price: "",
-    image: "", // base64
+    image: "",
   });
 
-  const MAX_STOCK = 100000; // contoh
-  const MAX_PRICE = 100000000; // 100 juta
+  const MAX_STOCK = 100000;
+  const MAX_PRICE = 100000000;
 
   // =======================
-  // FETCH
+  // HELPERS
+  // =======================
+  const getImageSrc = (base64) => {
+    if (!base64) return null;
+    if (base64.startsWith("data:image")) return base64;
+    return `data:image/png;base64,${base64}`;
+  };
+
+  // =======================
+  // FETCH PRODUCTS
   // =======================
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const res = await getProducts();
-      setProducts(res.data);
+
+      // SUPPORT: array langsung ATAU pagination
+      const list = Array.isArray(res.data) ? res.data : res.data?.results || [];
+
+      setProducts(list);
     } catch (e) {
-      console.error(e);
+      console.error("Fetch products error:", e);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -44,11 +59,11 @@ export default function AdminProducts() {
   }, []);
 
   // =======================
-  // SAVE
+  // SAVE (CREATE / UPDATE)
   // =======================
   const handleSave = async () => {
     if (!form.title || !form.price || !form.stock) {
-      alert("Lengkapi semua field wajib");
+      alert("Lengkapi field wajib");
       return;
     }
 
@@ -60,7 +75,7 @@ export default function AdminProducts() {
         description: form.description,
         stock: Number(form.stock),
         price: Number(form.price),
-        image: form.image || null, // base64
+        image: form.image || null,
       };
 
       if (editingId) {
@@ -73,31 +88,29 @@ export default function AdminProducts() {
       resetForm();
       setShowModal(false);
     } catch (e) {
-      console.error(e);
+      console.error("Save product error:", e);
+      alert("Gagal menyimpan produk");
     } finally {
       setLoading(false);
     }
   };
 
+  // =======================
+  // INPUT VALIDATION
+  // =======================
   const handleIntegerChange = (e, field, max) => {
     const raw = e.target.value;
-
-    // hanya angka
     if (!/^\d*$/.test(raw)) return;
 
-    // kosong boleh (biar bisa hapus)
     if (raw === "") {
-      setForm((prev) => ({ ...prev, [field]: "" }));
+      setForm((p) => ({ ...p, [field]: "" }));
       return;
     }
 
     const num = Number(raw);
-
-    // ❌ kalau lebih dari max → TOLAK (jangan set state)
     if (num > max) return;
 
-    // ✅ aman
-    setForm((prev) => ({ ...prev, [field]: raw }));
+    setForm((p) => ({ ...p, [field]: raw }));
   };
 
   // =======================
@@ -107,8 +120,8 @@ export default function AdminProducts() {
     setForm({
       title: product.title,
       description: product.description || "",
-      stock: product.stock.toString(),
-      price: product.price.toString(),
+      stock: String(product.stock),
+      price: String(product.price),
       image: product.image || "",
     });
     setEditingId(product.id);
@@ -119,14 +132,15 @@ export default function AdminProducts() {
   // DELETE
   // =======================
   const handleDelete = async (id) => {
-    if (!window.confirm("Yakin hapus produk ini?")) return;
+    if (!confirm("Yakin hapus produk ini?")) return;
 
     try {
       setLoading(true);
       await deleteProduct(id);
       await fetchProducts();
     } catch (e) {
-      console.error(e);
+      console.error("Delete error:", e);
+      alert("Gagal menghapus produk");
     } finally {
       setLoading(false);
     }
@@ -147,17 +161,20 @@ export default function AdminProducts() {
   // IMAGE PICK
   // =======================
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const base64 = await fileToBase64(file);
-    setForm((prev) => ({ ...prev, image: base64 }));
+    setForm((p) => ({ ...p, image: base64 }));
   };
 
+  // =======================
+  // UI
+  // =======================
   return (
     <div className="flex min-h-screen bg-base-100">
       <main className="flex-1 p-8">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">
@@ -166,6 +183,7 @@ export default function AdminProducts() {
             </h1>
             <p>Total: {products.length} produk</p>
           </div>
+
           <button
             className="btn btn-primary"
             onClick={() => {
@@ -178,75 +196,55 @@ export default function AdminProducts() {
           </button>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="card bg-base-200 shadow">
           <table className="table">
             <thead>
               <tr>
                 <th>Produk</th>
-                <th>Stock</th>
+                <th>Stok</th>
                 <th>Harga</th>
                 <th>Aksi</th>
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="text-center py-8">
+                  <td colSpan="4" className="text-center py-10">
                     <span className="loading loading-spinner loading-md mr-2" />
                     Memuat produk...
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan="4">
-                    {/* EMPTY STATE */}
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                      <div className="mb-4 rounded-full bg-base-300 p-4">
-                        <Icon
-                          icon="mdi:package-variant-remove"
-                          className="text-4xl text-base-content/60"
-                        />
-                      </div>
-
-                      <h3 className="text-lg font-semibold mb-1">
-                        Belum ada produk
-                      </h3>
-                      <p className="text-sm text-base-content/60 mb-4">
-                        Tambahkan produk pertama untuk mulai mengelola katalog
-                      </p>
-
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => {
-                          resetForm();
-                          setShowModal(true);
-                        }}
-                      >
-                        <Icon icon="mdi:plus" className="mr-1" />
-                        Tambah Produk
-                      </button>
-                    </div>
+                  <td colSpan="4" className="text-center py-16">
+                    <Icon
+                      icon="mdi:package-variant-remove"
+                      className="text-4xl text-base-300 mb-2"
+                    />
+                    <p className="opacity-60">Belum ada produk</p>
                   </td>
                 </tr>
               ) : (
                 products.map((p) => (
                   <tr key={p.id}>
                     <td>
-                      <div className="flex gap-3 items-center">
-                        {p.image ? (
+                      <div className="flex items-center gap-3">
+                        {getImageSrc(p.image) ? (
                           <img
-                            src={p.image}
+                            src={getImageSrc(p.image)}
                             className="w-12 h-12 rounded object-cover"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded bg-base-300 flex items-center justify-center">
                             <Icon
                               icon="mdi:image-off-outline"
-                              className="text-xl text-base-content/40"
+                              className="text-xl opacity-40"
                             />
                           </div>
                         )}
+
                         <div>
                           <div className="font-semibold">{p.title}</div>
                           <div className="text-sm opacity-60">
@@ -255,10 +253,13 @@ export default function AdminProducts() {
                         </div>
                       </div>
                     </td>
+
                     <td>{p.stock}</td>
-                    <td className="text-primary font-semibold">
+
+                    <td className="font-semibold text-primary">
                       Rp {p.price.toLocaleString()}
                     </td>
+
                     <td>
                       <button
                         onClick={() => handleEdit(p)}
@@ -280,7 +281,7 @@ export default function AdminProducts() {
           </table>
         </div>
 
-        {/* Modal */}
+        {/* MODAL */}
         {showModal && (
           <div className="modal modal-open">
             <div className="modal-box">
@@ -293,28 +294,28 @@ export default function AdminProducts() {
                   className="input input-bordered w-full"
                   placeholder="Nama Produk"
                   value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, title: e.target.value }))
+                  }
                 />
+
                 <textarea
                   className="textarea textarea-bordered w-full"
                   placeholder="Deskripsi"
                   value={form.description}
                   onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
+                    setForm((p) => ({ ...p, description: e.target.value }))
                   }
                 />
+
                 <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   className="input input-bordered w-full"
-                  placeholder="Stock"
+                  placeholder="Stok"
                   value={form.stock}
                   onChange={(e) => handleIntegerChange(e, "stock", MAX_STOCK)}
                 />
 
                 <input
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   className="input input-bordered w-full"
                   placeholder="Harga"
                   value={form.price}
@@ -327,10 +328,11 @@ export default function AdminProducts() {
                   className="file-input file-input-bordered w-full"
                   onChange={handleImageChange}
                 />
+
                 {form.image && (
                   <img
-                    src={form.image}
-                    className="w-24 h-24 object-cover rounded"
+                    src={getImageSrc(form.image)}
+                    className="w-24 h-24 rounded object-cover"
                   />
                 )}
               </div>
@@ -345,12 +347,13 @@ export default function AdminProducts() {
                 >
                   Batal
                 </button>
+
                 <button
                   className="btn btn-primary"
                   onClick={handleSave}
                   disabled={loading}
                 >
-                  Simpan
+                  {loading ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </div>

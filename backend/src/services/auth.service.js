@@ -141,10 +141,16 @@ const verifyEmail = async (verifyEmailToken) => {
   }
 };
 
+const me = async () => {
+  // await prisma.user.findUnique({ where: { id: '' } });
+  return 'hello';
+};
+
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
+  me,
 };
