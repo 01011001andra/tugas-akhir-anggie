@@ -128,57 +128,103 @@ export default function ProductDetail() {
     <div className="min-h-screen bg-base-100">
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-4 py-10 mt-20 grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* IMAGE */}
-        <div className="bg-base-200 rounded-xl flex items-center justify-center p-4">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={product.title}
-              className="w-full h-full object-cover rounded-xl"
-            />
-          ) : (
-            <Icon
-              icon="mdi:image-off-outline"
-              className="text-7xl text-base-400"
-            />
-          )}
-        </div>
+      <main className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          {/* IMAGE CARD */}
+          <div className="card bg-base-200 shadow-lg">
+            <figure className="aspect-square p-6">
+              {imageSrc ? (
+                <img
+                  src={imageSrc}
+                  alt={product.title}
+                  className="rounded-xl object-cover w-full h-full"
+                />
+              ) : (
+                <div className="flex items-center justify-center w-full h-full">
+                  <Icon
+                    icon="mdi:image-off-outline"
+                    className="text-8xl text-base-300"
+                  />
+                </div>
+              )}
+            </figure>
+          </div>
 
-        {/* INFO */}
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+          {/* PRODUCT INFO */}
+          <div className="space-y-6">
+            {/* Title */}
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
+                {product.title}
+              </h1>
+            </div>
 
-          <p className="text-xl text-primary font-bold mb-4">
-            {rupiah(product.price)}
-          </p>
+            {/* Price */}
+            <div className="flex items-center gap-4">
+              <p className="text-3xl font-extrabold text-primary">
+                {rupiah(product.price)}
+              </p>
 
-          <p className="mb-4 text-base-content/80">
-            {product.description || "Tidak ada deskripsi"}
-          </p>
+              {product.stock > 0 ? (
+                <span className="badge badge-success badge-lg text-white">
+                  Stok tersedia
+                </span>
+              ) : (
+                <span className="badge badge-error badge-lg text-white">
+                  Stok habis
+                </span>
+              )}
+            </div>
 
-          <p className="mb-6 text-sm">
-            Stok tersedia:{" "}
-            <span className="font-semibold">{product.stock}</span>
-          </p>
+            {/* Description */}
+            <p className="text-base leading-relaxed text-base-content/80">
+              {product.description || "Produk ini belum memiliki deskripsi."}
+            </p>
 
-          <button
-            onClick={handleAddToCart}
-            disabled={adding || product.stock <= 0}
-            className="btn btn-primary"
-          >
-            {adding ? (
-              <>
-                <Icon icon="mdi:loading" className="animate-spin" />
-                Menambahkan...
-              </>
-            ) : (
-              <>
-                <Icon icon="mdi:shopping-cart" />
-                Tambah ke Keranjang
-              </>
-            )}
-          </button>
+            {/* Stock Info */}
+            <div className="flex items-center gap-2 text-sm">
+              <Icon icon="mdi:warehouse" className="text-lg" />
+              <span>
+                Sisa stok:
+                <span className="font-semibold ml-1">{product.stock}</span>
+              </span>
+            </div>
+
+            {/* ACTION */}
+            <div className="pt-4">
+              <button
+                onClick={handleAddToCart}
+                disabled={adding || product.stock <= 0}
+                className="btn btn-primary btn-md w-full md:w-auto gap-2"
+              >
+                {adding ? (
+                  <>
+                    <Icon icon="mdi:loading" className="animate-spin text-xl" />
+                    Menambahkan...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="mdi:cart-plus" className="text-xl" />
+                    Tambah ke Keranjang
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Extra info */}
+            <div className="divider" />
+
+            <div className="flex gap-4 text-sm text-base-content/60">
+              <div className="flex items-center gap-2">
+                <Icon icon="mdi:shield-check" className="text-lg" />
+                Produk Original
+              </div>
+              <div className="flex items-center gap-2">
+                <Icon icon="mdi:truck-fast" className="text-lg" />
+                Pengiriman Cepat
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 

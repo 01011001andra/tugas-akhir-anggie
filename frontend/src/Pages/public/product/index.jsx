@@ -147,45 +147,17 @@ export default function ProductList() {
         </div>
 
         {/* TOOLBAR */}
-        <div className="card bg-base-200 mb-8">
-          <div className="card-body flex flex-col lg:flex-row gap-3">
-            <label className="input input-bordered flex items-center gap-2 w-full lg:max-w-md">
-              <Icon icon="mdi:magnify" />
-              <input
-                type="text"
-                className="grow"
-                placeholder="Cari produk atau harga…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-
-            <div className="ml-auto flex gap-2">
-              <select
-                className="select select-bordered select-sm"
-                value={sortMode}
-                onChange={(e) => setSortMode(e.target.value)}
-              >
-                <option value="relevan">Relevan</option>
-                <option value="price-asc">Harga ↑</option>
-                <option value="price-desc">Harga ↓</option>
-                <option value="name-asc">Nama A–Z</option>
-                <option value="name-desc">Nama Z–A</option>
-              </select>
-
-              <select
-                className="select select-bordered select-sm"
-                value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
-              >
-                {[8, 12, 24].map((n) => (
-                  <option key={n} value={n}>
-                    {n}/hal
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <div className="card  mb-8">
+          <label className="input input-bordered flex items-center gap-2 w-full ">
+            <Icon icon="mdi:magnify" />
+            <input
+              type="text"
+              className="grow w-full"
+              placeholder="Cari produk atau harga…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
         </div>
 
         {/* CONTENT */}

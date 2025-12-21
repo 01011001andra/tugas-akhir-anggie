@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { login } from "../../../services/auth.service";
+import { useSessionStore } from "../../../stores/session.store";
 
 export default function SectionMasuk() {
   const [values, setValues] = useState({
@@ -14,6 +15,7 @@ export default function SectionMasuk() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const getMe = useSessionStore((s) => s.getMe);
 
   const handleChanges = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -32,10 +34,10 @@ export default function SectionMasuk() {
 
     try {
       const res = await login(values);
-
+      console.log(res);
       localStorage.setItem("accessToken", res.data.tokens.access.token);
-      localStorage.setItem("refreshToken", res.data.tokens.refresh.token);
-
+      // localStorage.setItem("refreshToken", res.data.tokens.refresh.token);
+      await getMe();
       navigate("/admin/dashboard");
     } catch (err) {
       setErrorMessage(err.response?.data?.message || "Login gagal");
