@@ -5,11 +5,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DB_URL")
+//   directUrl= env("DIRECT_URL")
+// }
+
 datasource db {
-  provider = "postgresql"
-  url      = env("DB_URL")
-  directUrl= env("DIRECT_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
+
 
 model User {
   id              String    @id @default(uuid())
@@ -31,7 +37,7 @@ model User {
 
 model Token {
   id          String    @id @default(uuid())
-  token       String    @db.VarChar(400)
+  token       String    
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   type        String
@@ -62,6 +68,7 @@ model Product {
   image       String?
 
   cartItems   CartItem[]
+  transaction Transaction[]
   review      Review[]
 
   createdAt   DateTime  @default(now())
@@ -106,7 +113,9 @@ model CartItem {
 model Transaction {
   id            String    @id @default(uuid())
   userId        String
+  productId     String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product   @relation(fields: [productId], references: [id])
   totalPrice    Int
   paymentMethod String
   status        String

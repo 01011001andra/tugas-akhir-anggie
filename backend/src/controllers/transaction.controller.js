@@ -4,10 +4,11 @@ const transactionService = require('../services/transaction.service');
 
 const createTransaction = catchAsync(async (req, res) => {
   const transaction = await transactionService.createTransaction({
-    ...req.body,
     userId: req.user.id,
+    paymentMethod: req.body.paymentMethod || 'QRIS',
+    items: req.body,
   });
-
+  console.log(transaction);
   res.status(status.CREATED).send(transaction);
 });
 

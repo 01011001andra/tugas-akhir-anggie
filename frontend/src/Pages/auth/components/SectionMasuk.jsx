@@ -34,11 +34,14 @@ export default function SectionMasuk() {
 
     try {
       const res = await login(values);
-      console.log(res);
       localStorage.setItem("accessToken", res.data.tokens.access.token);
       // localStorage.setItem("refreshToken", res.data.tokens.refresh.token);
       await getMe();
-      navigate("/admin/dashboard");
+      if (res.data.user.role == "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/mainhero");
+      }
     } catch (err) {
       setErrorMessage(err.response?.data?.message || "Login gagal");
     } finally {

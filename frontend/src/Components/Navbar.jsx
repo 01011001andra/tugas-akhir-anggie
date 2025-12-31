@@ -30,6 +30,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
+    console.log("masuk");
     clearSession();
     useCartStore.getState().clear(); // 🔥 reset cart saat logout
     localStorage.removeItem("accessToken");
@@ -156,15 +157,12 @@ export default function Navbar() {
             <ul className="dropdown-content mt-3 z-[50] w-60 rounded-2xl bg-base-100 shadow-xl border border-base-200 p-2">
               <li className="px-3 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center">
-                    {session.name?.charAt(0).toUpperCase()}
-                  </div>
                   <div className="flex flex-col">
                     <span className="font-semibold truncate">
                       {session.name}
                     </span>
                     <span className="text-xs text-base-content/60">
-                      Administrator
+                      {session.role}
                     </span>
                   </div>
                 </div>
@@ -174,25 +172,26 @@ export default function Navbar() {
 
               <li>
                 <Link
-                  to={"/admin/dashboard"}
+                  to={
+                    session.role == "admin" ? "/admin/dashboard" : "/mainhero"
+                  }
                   className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-base-200 transition"
                 >
-                  <Icon
-                    icon="solar:dashboard-bold"
-                    className="text-lg text-primary"
-                  />
+                  <Icon icon="mdi:arrow-right" className="text-lg" />
+
                   <span className="font-medium">Dashboard</span>
                 </Link>
               </li>
 
               <li>
-                <a
+                <button
+                  type="button"
                   onClick={handleLogout}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-error hover:bg-error/10 transition"
+                  className="w-full text-left flex items-center gap-3 rounded-xl px-3 py-2 text-error hover:bg-error/10 transition"
                 >
                   <Icon icon="solar:logout-2-bold" className="text-lg" />
                   <span className="font-medium">Logout</span>
-                </a>
+                </button>
               </li>
             </ul>
           </div>

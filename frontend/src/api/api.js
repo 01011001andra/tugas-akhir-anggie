@@ -43,11 +43,11 @@ api.interceptors.response.use(
 
     // HANDLE TOKEN EXPIRED
     if (error.response?.status === 401) {
-      // localStorage.removeItem("accessToken");
+      localStorage.removeItem("accessToken");
 
       // optional delay biar toast sempat muncul
       setTimeout(() => {
-        // window.location.href = "/masuk";
+        window.location.href = "/masuk";
       }, 1000);
     }
 

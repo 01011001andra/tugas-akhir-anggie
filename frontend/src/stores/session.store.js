@@ -27,6 +27,13 @@ export const useSessionStore = create((set) => ({
       });
     }
   },
+  clearSession: async () => {
+    set({
+      session: null,
+      loading: false,
+      initialized: true,
+    });
+  },
 
   markInitialized: () =>
     set({

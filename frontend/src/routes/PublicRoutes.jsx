@@ -18,7 +18,9 @@ export default function PublicRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/tentang" element={<About />} />
       <Route path="/layanan" element={<Layanan />} />
+      {/* User */}
       <Route path="/mainhero" element={<MainHero />} />
+      
       {/* PRODUCTS */}
       <Route path="/products" element={<ProductList />} />
       <Route path="/products/:id" element={<ProductDetail />} />{" "}

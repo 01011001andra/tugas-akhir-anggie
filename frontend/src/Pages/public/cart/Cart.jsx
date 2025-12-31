@@ -7,9 +7,9 @@ import {
   getMyCart,
   updateCartItemQty,
   removeCartItem,
-  clearMyCart,
 } from "../../../services/cart.service";
 import { useCartStore } from "../../../stores/cart.store";
+import { createTransaction } from "../../../services/transaction.service";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -122,10 +122,10 @@ export default function Cart() {
     }
 
     try {
+      await createTransaction(items);
       setIsCheckingOut(true);
       clearStore(); // 🔥 navbar langsung 0
-      await clearMyCart(); // backend
-      navigate("/products");
+      navigate("/mainhero?type=transaction");
     } finally {
       setIsCheckingOut(false);
     }
