@@ -83,6 +83,7 @@ const getTransactionsByUser = async (userId) => {
     include: { product: true, user: true },
   });
 };
+
 const getTransactions = async () => {
   return prisma.transaction.findMany({ include: { product: true, user: true } });
 };

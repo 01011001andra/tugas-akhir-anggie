@@ -3,7 +3,12 @@ const prisma = require('../../prisma');
 const ApiError = require('../utils/ApiError');
 
 const createReview = async (data) => {
-  return prisma.review.create({ data });
+  const { transactionId, ...body } = data;
+
+  const result = await prisma.review.create({ data: body });
+  await prisma.transaction.update({ where: { id: transactionId }, data: { isReviewed: true } });
+
+  return result;
 };
 
 const getReviewsByProduct = async (productId) => {

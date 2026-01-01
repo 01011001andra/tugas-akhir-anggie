@@ -1,31 +1,44 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
+import { getDashboardSummary } from "../../services/dashboard.service";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalUsers: 0,
     totalOrders: 0,
     totalRevenue: 0,
   });
-  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const products = JSON.parse(localStorage.getItem("products") || "[]");
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const notifications = JSON.parse(
-      localStorage.getItem("notifications") || "[]"
-    );
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
 
-    setStats({
-      totalProducts: products.length,
-      totalUsers: users.length,
-      totalOrders: notifications.filter((n) => n.type === "order").length,
-      totalRevenue: notifications.reduce((sum, n) => sum + (n.revenue || 0), 0),
-    });
+        const res = await getDashboardSummary();
+        const data = res.data.data;
+
+        setStats({
+          totalProducts: data.totalProducts,
+          totalUsers: data.totalUsers,
+          totalOrders: data.totalTransactions,
+          totalRevenue: data.totalRevenue,
+        });
+      } catch (err) {
+        console.error(err);
+        setError("Gagal memuat data dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
   }, []);
 
   const dashboardCards = [
@@ -51,17 +64,33 @@ export default function AdminDashboard() {
       value: stats.totalOrders,
       color: "text-purple-500",
       bgColor: "bg-purple-100",
-      link: "/admin/notifications",
+      link: "/admin/transaksi",
     },
     {
       icon: "mdi:cash",
       title: "Total Revenue",
-      value: `Rp ${stats.totalRevenue.toLocaleString()}`,
+      value: `Rp ${stats.totalRevenue.toLocaleString("id-ID")}`,
       color: "text-yellow-500",
       bgColor: "bg-yellow-100",
       link: "#",
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-base-100">
@@ -84,8 +113,8 @@ export default function AdminDashboard() {
               <div
                 key={idx}
                 onClick={() => card.link !== "#" && navigate(card.link)}
-                className={`card bg-base-200 shadow-xl hover:shadow-2xl transition-all cursor-pointer ${
-                  card.link === "#" ? "cursor-default" : ""
+                className={`card bg-base-200 shadow-xl hover:shadow-2xl transition-all ${
+                  card.link !== "#" ? "cursor-pointer" : "cursor-default"
                 }`}
               >
                 <div className="card-body">
@@ -128,11 +157,11 @@ export default function AdminDashboard() {
                   Kelola User
                 </button>
                 <button
-                  onClick={() => navigate("/admin/notifications")}
+                  onClick={() => navigate("/admin/transaksi")}
                   className="btn btn-outline btn-warning justify-start"
                 >
-                  <Icon icon="mdi:bell" />
-                  Notifikasi
+                  <Icon icon="mdi:money" />
+                  Transaksi
                 </button>
                 <button
                   onClick={() => navigate("/")}

@@ -151,10 +151,10 @@ export default function AdminTransactions() {
                         </span>
                       </td>
                       <td>
-                        {t.paymentProof ? (
+                        {t.proof ? (
                           <button
                             className="btn btn-xs btn-outline"
-                            onClick={() => setPreview(t.paymentProof)}
+                            onClick={() => setPreview(t.proof)}
                           >
                             Lihat
                           </button>

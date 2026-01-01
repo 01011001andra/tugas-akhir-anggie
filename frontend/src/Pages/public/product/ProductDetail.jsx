@@ -7,6 +7,7 @@ import Footer from "../../../components/Footer";
 
 import { getProductById } from "../../../services/product.service";
 import { addCartItem, getMyCart } from "../../../services/cart.service";
+import { getReviewsByProduct } from "../../../services/review.service";
 import { useCartStore } from "../../../stores/cart.store";
 
 export default function ProductDetail() {
@@ -14,7 +15,9 @@ export default function ProductDetail() {
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [adding, setAdding] = useState(false);
 
   // =====================
@@ -27,10 +30,7 @@ export default function ProductDetail() {
       try {
         setLoading(true);
         const res = await getProductById(id);
-
-        if (mounted) {
-          setProduct(res?.data || null);
-        }
+        if (mounted) setProduct(res?.data || null);
       } catch (err) {
         console.error(err);
         setProduct(null);
@@ -40,10 +40,30 @@ export default function ProductDetail() {
     };
 
     if (id) fetchProduct();
+    return () => (mounted = false);
+  }, [id]);
 
-    return () => {
-      mounted = false;
+  // =====================
+  // FETCH REVIEWS
+  // =====================
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const res = await getReviewsByProduct(id);
+        if (mounted) setReviews(res?.data || []);
+      } catch (err) {
+        console.error(err);
+        setReviews([]);
+      } finally {
+        if (mounted) setLoadingReviews(false);
+      }
     };
+
+    if (id) fetchReviews();
+    return () => (mounted = false);
   }, [id]);
 
   // =====================
@@ -57,9 +77,8 @@ export default function ProductDetail() {
     }).format(n || 0);
 
   const getImageSrc = (base64) => {
-    if (!base64 || typeof base64 !== "string" || base64.length < 50) {
+    if (!base64 || typeof base64 !== "string" || base64.length < 50)
       return null;
-    }
     if (base64.startsWith("data:image")) return base64;
     return `data:image/png;base64,${base64}`;
   };
@@ -72,11 +91,7 @@ export default function ProductDetail() {
 
     try {
       setAdding(true);
-
-      // 1️⃣ backend
       await addCartItem(product.id, 1);
-
-      // 2️⃣ sync ulang cart → zustand
       const { data } = await getMyCart();
       useCartStore.getState().setFromApi(data?.items || []);
     } catch (err) {
@@ -130,7 +145,7 @@ export default function ProductDetail() {
 
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          {/* IMAGE CARD */}
+          {/* IMAGE */}
           <div className="card bg-base-200 shadow-lg">
             <figure className="aspect-square p-6">
               {imageSrc ? (
@@ -150,81 +165,118 @@ export default function ProductDetail() {
             </figure>
           </div>
 
-          {/* PRODUCT INFO */}
+          {/* INFO */}
           <div className="space-y-6">
-            {/* Title */}
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">
-                {product.title}
-              </h1>
-            </div>
+            <h1 className="text-3xl lg:text-4xl font-bold">{product.title}</h1>
 
-            {/* Price */}
             <div className="flex items-center gap-4">
               <p className="text-3xl font-extrabold text-primary">
                 {rupiah(product.price)}
               </p>
-
               {product.stock > 0 ? (
-                <span className="badge badge-success badge-lg text-white">
-                  Stok tersedia
-                </span>
+                <span className="badge badge-success">Stok tersedia</span>
               ) : (
-                <span className="badge badge-error badge-lg text-white">
-                  Stok habis
-                </span>
+                <span className="badge badge-error">Stok habis</span>
               )}
             </div>
 
-            {/* Description */}
-            <p className="text-base leading-relaxed text-base-content/80">
+            <p className="text-base-content/80">
               {product.description || "Produk ini belum memiliki deskripsi."}
             </p>
 
-            {/* Stock Info */}
-            <div className="flex items-center gap-2 text-sm">
-              <Icon icon="mdi:warehouse" className="text-lg" />
-              <span>
-                Sisa stok:
-                <span className="font-semibold ml-1">{product.stock}</span>
-              </span>
-            </div>
-
-            {/* ACTION */}
             <div className="pt-4">
               <button
                 onClick={handleAddToCart}
                 disabled={adding || product.stock <= 0}
-                className="btn btn-primary btn-md w-full md:w-auto gap-2"
+                className="btn btn-primary gap-2"
               >
                 {adding ? (
                   <>
-                    <Icon icon="mdi:loading" className="animate-spin text-xl" />
+                    <Icon icon="mdi:loading" className="animate-spin" />
                     Menambahkan...
                   </>
                 ) : (
                   <>
-                    <Icon icon="mdi:cart-plus" className="text-xl" />
+                    <Icon icon="mdi:cart-plus" />
                     Tambah ke Keranjang
                   </>
                 )}
               </button>
             </div>
 
-            {/* Extra info */}
             <div className="divider" />
 
-            <div className="flex gap-4 text-sm text-base-content/60">
+            {/* EXTRA */}
+            <div className="flex gap-6 text-sm opacity-70">
               <div className="flex items-center gap-2">
-                <Icon icon="mdi:shield-check" className="text-lg" />
+                <Icon icon="mdi:shield-check" />
                 Produk Original
               </div>
               <div className="flex items-center gap-2">
-                <Icon icon="mdi:truck-fast" className="text-lg" />
+                <Icon icon="mdi:truck-fast" />
                 Pengiriman Cepat
               </div>
             </div>
           </div>
+        </div>
+
+        {/* =====================
+            REVIEW SECTION
+           ===================== */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Icon icon="mdi:star" className="text-yellow-400" />
+            Ulasan Produk
+          </h2>
+
+          {loadingReviews ? (
+            <div className="flex justify-center py-10">
+              <span className="loading loading-spinner loading-md" />
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center py-10 opacity-60">
+              Belum ada ulasan untuk produk ini
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="card bg-base-200 shadow-sm">
+                  <div className="card-body">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">
+                        {review.user?.name || "User"}
+                      </p>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Icon
+                            key={star}
+                            icon={
+                              review.rating >= star
+                                ? "mdi:star"
+                                : "mdi:star-outline"
+                            }
+                            className={`${
+                              review.rating >= star
+                                ? "text-yellow-400"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <p className="mt-2 text-sm text-base-content/80">
+                      {review.comment}
+                    </p>
+
+                    <p className="text-xs opacity-50 mt-2">
+                      {new Date(review.createdAt).toLocaleDateString("id-ID")}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

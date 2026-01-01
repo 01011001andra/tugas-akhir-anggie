@@ -7,12 +7,15 @@ const createProduct = async (data) => {
 };
 
 const queryProducts = async () => {
-  return prisma.product.findMany();
+  return prisma.product.findMany({
+    include: { review: { include: { user: true } } },
+  });
 };
 
 const getProductById = async (id) => {
   return prisma.product.findFirst({
     where: { id },
+    include: { review: { include: { user: true } } },
   });
 };
 
