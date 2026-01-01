@@ -117,7 +117,8 @@ model Transaction {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   product       Product   @relation(fields: [productId], references: [id])
   totalPrice    Int
-  paymentMethod String
+  paymentMethod String?
+  proof         String?
   status        String
 
   createdAt     DateTime  @default(now())

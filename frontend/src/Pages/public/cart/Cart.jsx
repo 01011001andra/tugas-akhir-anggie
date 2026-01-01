@@ -16,12 +16,19 @@ export default function Cart() {
 
   const [loading, setLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [checkoutForm, setCheckoutForm] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
+  });
+
+  const [payment, setPayment] = useState({
+    method: "",
+    proof: null, // 🔥 BASE64
+    proofPreview: null,
   });
 
   // =========================
@@ -33,6 +40,51 @@ export default function Cart() {
   const clearStore = useCartStore((s) => s.clear);
 
   // =========================
+  // PAYMENT GUIDE
+  // =========================
+  const paymentGuides = [
+    {
+      key: "BCA",
+      label: "Transfer Bank BCA",
+      account: "1234567890",
+      name: "PT VERTIGROW INDONESIA",
+      steps: [
+        "Buka BCA Mobile / KlikBCA",
+        "Pilih Transfer → Ke Rekening BCA",
+        "Masukkan nomor rekening tujuan",
+        "Masukkan nominal sesuai total pembayaran",
+        "Simpan bukti transfer",
+      ],
+    },
+    {
+      key: "BRI",
+      label: "Transfer Bank BRI",
+      account: "0987654321",
+      name: "PT VERTIGROW INDONESIA",
+      steps: [
+        "Buka BRImo / ATM BRI",
+        "Pilih Transfer → Ke Rekening BRI",
+        "Masukkan nomor rekening tujuan",
+        "Masukkan nominal sesuai total pembayaran",
+        "Simpan bukti transfer",
+      ],
+    },
+    {
+      key: "MANDIRI",
+      label: "Transfer Bank Mandiri",
+      account: "111222333444",
+      name: "PT VERTIGROW INDONESIA",
+      steps: [
+        "Buka Livin’ by Mandiri",
+        "Pilih Transfer → Ke Rekening Mandiri",
+        "Masukkan nomor rekening tujuan",
+        "Masukkan nominal sesuai total pembayaran",
+        "Simpan bukti transfer",
+      ],
+    },
+  ];
+
+  // =========================
   // HELPERS
   // =========================
   const rupiah = (n) =>
@@ -42,15 +94,17 @@ export default function Cart() {
       maximumFractionDigits: 0,
     }).format(n || 0);
 
-  const getImageSrc = (base64) => {
-    if (!base64 || typeof base64 !== "string" || base64.length < 50)
-      return null;
-    if (base64.startsWith("data:image")) return base64;
-    return `data:image/png;base64,${base64}`;
-  };
+  // 🔥 File → Base64
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
   // =========================
-  // INIT CART (API → STORE)
+  // INIT CART
   // =========================
   useEffect(() => {
     const initCart = async () => {
@@ -68,51 +122,37 @@ export default function Cart() {
   }, []);
 
   // =========================
-  // ACTIONS (SAFE QTY)
+  // CART ACTIONS
   // =========================
   const handleUpdateQty = async (item, nextQty) => {
-    // ❌ tidak boleh kurang dari 1
-    if (nextQty < 1) return;
-
-    // ❌ block saat increase melebihi stok
-    if (nextQty > item.quantity && nextQty > item.stock) return;
+    if (nextQty < 1 || nextQty > item.product.stock) return;
 
     const prevQty = item.quantity;
-
-    // ✅ optimistic update (UI + navbar langsung update)
     updateQtyStore(item.productId, nextQty);
 
     try {
-      // 1️⃣ update ke backend
       await updateCartItemQty(item.productId, nextQty);
-
-      // 2️⃣ ambil cart TERBARU dari backend
       const { data } = await getMyCart();
-
-      // 3️⃣ sync ulang ke store
       useCartStore.getState().setFromApi(data?.items || []);
-    } catch (err) {
-      console.error(err);
-
-      // 🔥 rollback kalau gagal
+    } catch {
       updateQtyStore(item.productId, prevQty);
-
       alert("Gagal update qty");
     }
   };
 
   const handleRemoveItem = async (productId) => {
     removeStoreItem(productId);
-
     try {
       await removeCartItem(productId);
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Gagal menghapus item");
     }
   };
 
-  const handleCheckout = async (e) => {
+  // =========================
+  // CHECKOUT FLOW
+  // =========================
+  const handleCheckout = (e) => {
     e.preventDefault();
 
     const { name, email, phone, address } = checkoutForm;
@@ -121,11 +161,28 @@ export default function Cart() {
       return;
     }
 
+    setShowPaymentModal(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!payment.method) return alert("Pilih metode pembayaran");
+    if (!payment.proof) return alert("Upload bukti transfer");
+
     try {
-      await createTransaction(items);
       setIsCheckingOut(true);
-      clearStore(); // 🔥 navbar langsung 0
+
+      await createTransaction({
+        items,
+        paymentMethod: payment.method,
+        proof: payment.proof, // 🔥 kirim base64
+      });
+
+      clearStore();
+      setShowPaymentModal(false);
       navigate("/mainhero?type=transaction");
+    } catch (err) {
+      console.error(err);
+      alert("Checkout gagal");
     } finally {
       setIsCheckingOut(false);
     }
@@ -134,13 +191,10 @@ export default function Cart() {
   // =========================
   // TOTAL
   // =========================
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = items.length ? 25000 : 0;
   const total = subtotal + shipping;
 
-  // =========================
-  // UI
-  // =========================
   return (
     <div className="min-h-screen bg-base-100">
       <Navbar />
@@ -156,105 +210,58 @@ export default function Cart() {
             <span className="loading loading-spinner loading-lg" />
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16 flex items-center justify-center flex-col">
-            <Icon icon="mdi:cart-off" className="text-6xl text-base-300 mb-4" />
-            <p className="text-lg text-base-600 mb-4">Keranjang Anda kosong</p>
-            <button
-              onClick={() => navigate("/products")}
-              className="btn btn-primary"
-            >
-              Lanjut Belanja
-            </button>
+          <div className="text-center py-20">
+            <Icon icon="mdi:cart-off" className="text-6xl opacity-30 mb-4" />
+            <p>Keranjang Anda kosong</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* CART TABLE */}
+            {/* CART */}
             <div className="lg:col-span-2 overflow-x-auto">
-              <table className="table w-full">
-                <thead>
-                  <tr>
-                    <th>Produk</th>
-                    <th className="text-center">Qty</th>
-                    <th className="text-right">Total</th>
-                    <th></th>
-                  </tr>
-                </thead>
+              <table className="table">
                 <tbody>
-                  {items.map((item) => {
-                    const imageSrc = getImageSrc(item.image);
-                    const stock = item.product?.stock ?? 0;
-                    console.log(stock);
-                    return (
-                      <tr key={item.productId}>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 bg-base-300 rounded overflow-hidden flex items-center justify-center">
-                              {imageSrc ? (
-                                <img
-                                  src={imageSrc}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Icon
-                                  icon="mdi:image-off-outline"
-                                  className="text-2xl text-base-400"
-                                />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium">{item.title}</div>
-                              <div className="text-sm text-primary">
-                                {rupiah(item.price)}
-                              </div>
-                              <div className="text-xs opacity-60">
-                                Stok: {stock}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* QTY */}
-                        <td className="text-center">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              disabled={item.quantity <= 1}
-                              className="btn btn-xs"
-                              onClick={() =>
-                                handleUpdateQty(item, item.quantity - 1)
-                              }
-                            >
-                              −
-                            </button>
-
-                            <span>{item.quantity}</span>
-
-                            <button
-                              disabled={item.quantity >= stock}
-                              className="btn btn-xs"
-                              onClick={() =>
-                                handleUpdateQty(item, item.quantity + 1)
-                              }
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-
-                        <td className="text-right font-semibold">
-                          {rupiah(item.price * item.quantity)}
-                        </td>
-
-                        <td className="text-right">
+                  {items.map((item) => (
+                    <tr key={item.productId}>
+                      <td>
+                        <div className="font-medium">{item.title}</div>
+                        <div className="text-sm text-primary">
+                          {rupiah(item.price)}
+                        </div>
+                      </td>
+                      <td className="text-center">
+                        <div className="flex justify-center gap-2">
                           <button
-                            onClick={() => handleRemoveItem(item.productId)}
-                            className="btn btn-xs btn-error btn-ghost"
+                            className="btn btn-xs"
+                            onClick={() =>
+                              handleUpdateQty(item, item.quantity - 1)
+                            }
                           >
-                            <Icon icon="mdi:trash" />
+                            −
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          <span>{item.quantity}</span>
+                          <button
+                            className="btn btn-xs"
+                            onClick={() =>
+                              handleUpdateQty(item, item.quantity + 1)
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="text-right font-semibold">
+                        {rupiah(item.price * item.quantity)}
+                      </td>
+                      <td className="text-right">
+                        <button
+                          className="btn btn-xs btn-error btn-ghost"
+                          onClick={() => handleRemoveItem(item.productId)}
+                        >
+                          <Icon icon="mdi:trash" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -262,25 +269,12 @@ export default function Cart() {
             {/* SUMMARY */}
             <div className="space-y-6">
               <div className="card bg-base-200 p-6">
-                <h2 className="font-bold mb-4">Ringkasan</h2>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>{rupiah(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ongkir</span>
-                    <span>{rupiah(shipping)}</span>
-                  </div>
-                  <div className="divider" />
-                  <div className="flex justify-between text-lg font-bold text-primary">
-                    <span>Total</span>
-                    <span>{rupiah(total)}</span>
-                  </div>
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span className="text-primary">{rupiah(total)}</span>
                 </div>
               </div>
 
-              {/* CHECKOUT */}
               <form
                 onSubmit={handleCheckout}
                 className="card bg-base-200 p-6 space-y-3"
@@ -289,7 +283,7 @@ export default function Cart() {
                 {["name", "email", "phone"].map((f) => (
                   <input
                     key={f}
-                    className="input input-bordered w-full"
+                    className="input input-bordered"
                     placeholder={f.toUpperCase()}
                     value={checkoutForm[f]}
                     onChange={(e) =>
@@ -301,8 +295,7 @@ export default function Cart() {
                   />
                 ))}
                 <textarea
-                  className="textarea textarea-bordered w-full"
-                  rows={3}
+                  className="textarea textarea-bordered"
                   placeholder="Alamat Lengkap"
                   value={checkoutForm.address}
                   onChange={(e) =>
@@ -312,13 +305,7 @@ export default function Cart() {
                     })
                   }
                 />
-                <button
-                  type="submit"
-                  className="btn btn-primary w-full"
-                  disabled={isCheckingOut}
-                >
-                  {isCheckingOut ? "Memproses..." : "Checkout"}
-                </button>
+                <button className="btn btn-primary w-full">Checkout</button>
               </form>
             </div>
           </div>
@@ -326,6 +313,111 @@ export default function Cart() {
       </main>
 
       <Footer />
+
+      {/* PAYMENT MODAL */}
+      {showPaymentModal && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-lg">
+            <h3 className="font-bold text-lg mb-3">Konfirmasi Pembayaran</h3>
+
+            {/* TOTAL */}
+            <div className="bg-base-200 rounded-lg p-3 mb-4">
+              <div className="flex justify-between font-bold text-primary">
+                <span>Total Bayar</span>
+                <span>{rupiah(total)}</span>
+              </div>
+            </div>
+
+            {/* PAYMENT METHOD */}
+            {paymentGuides.map((pg) => (
+              <label
+                key={pg.key}
+                className="block border rounded-lg p-3 mb-3 cursor-pointer hover:bg-base-200"
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    className="radio radio-primary"
+                    checked={payment.method === pg.key}
+                    onChange={() => setPayment({ ...payment, method: pg.key })}
+                  />
+                  <span className="font-medium">{pg.label}</span>
+                </div>
+
+                {payment.method === pg.key && (
+                  <div className="mt-3 bg-base-100 p-3 rounded-lg text-sm space-y-2">
+                    <p>
+                      <b>No. Rekening:</b> {pg.account}
+                    </p>
+                    <p>
+                      <b>Atas Nama:</b> {pg.name}
+                    </p>
+                    <ol className="list-decimal ml-5 space-y-1">
+                      {pg.steps.map((step, i) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </label>
+            ))}
+
+            {/* UPLOAD */}
+            <div className="mt-4">
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Bukti Transfer
+                  <span className="text-error ml-1">*</span>
+                </span>
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                className="file-input file-input-bordered w-full"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const base64 = await fileToBase64(file);
+                  setPayment({
+                    ...payment,
+                    proof: base64,
+                    proofPreview: base64,
+                  });
+                }}
+              />
+            </div>
+
+            {payment.proofPreview && (
+              <div className="mt-3">
+                <p className="text-sm font-medium mb-1">Preview Bukti:</p>
+                <img
+                  src={payment.proofPreview}
+                  alt="Bukti Transfer"
+                  className="max-h-40 rounded-lg border object-contain"
+                />
+              </div>
+            )}
+
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={() => setShowPaymentModal(false)}
+              >
+                Batal
+              </button>
+              <button
+                className="btn btn-primary"
+                disabled={isCheckingOut}
+                onClick={handleConfirmPayment}
+              >
+                {isCheckingOut ? "Memproses..." : "Konfirmasi"}
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

@@ -2,9 +2,17 @@ const { status } = require('http-status');
 const prisma = require('../../prisma');
 const ApiError = require('../utils/ApiError');
 
-const createTransaction = async ({ userId, items, paymentMethod }) => {
+const createTransaction = async ({ userId, items, paymentMethod, proof }) => {
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error('Items harus berupa array dan tidak boleh kosong');
+  }
+
+  if (!paymentMethod) {
+    throw new Error('Metode pembayaran wajib diisi');
+  }
+
+  if (!proof) {
+    throw new Error('Bukti transfer wajib diupload');
   }
 
   return prisma.$transaction(async (tx) => {
@@ -43,13 +51,14 @@ const createTransaction = async ({ userId, items, paymentMethod }) => {
         },
       });
 
-      // 🧾 Buat transaksi
+      // 🧾 Buat transaksi + simpan bukti
       const trx = await tx.transaction.create({
         data: {
           userId,
           productId: product.id,
           totalPrice: item.price * item.quantity,
           paymentMethod,
+          proof: proof, // 🔥 SIMPAN BASE64
           status: 'PENDING',
         },
       });
@@ -57,17 +66,12 @@ const createTransaction = async ({ userId, items, paymentMethod }) => {
       transactions.push(trx);
     }
 
-    // 🧹 CLEAR CART (SETELAH TRANSAKSI SUKSES)
+    // 🧹 CLEAR CART
     await tx.cartItem.deleteMany({
       where: {
         cartId: cart.id,
       },
     });
-
-    // ❗ OPTIONAL
-    // kalau kamu mau cart selalu ada → JANGAN delete cart
-    // kalau mau cart fresh → delete cart juga
-    // await tx.cart.delete({ where: { id: cart.id } });
 
     return transactions;
   });
