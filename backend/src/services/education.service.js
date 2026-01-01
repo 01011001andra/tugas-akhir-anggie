@@ -6,10 +6,8 @@ const createEducation = async (data) => {
   return prisma.education.create({ data });
 };
 
-const getEducationsByUser = async (userId) => {
-  return prisma.education.findMany({
-    where: { userId },
-  });
+const getEducations = async () => {
+  return prisma.education.findMany();
 };
 
 const getEducationById = async (id) => {
@@ -43,7 +41,7 @@ const deleteEducationById = async (id) => {
 
 module.exports = {
   createEducation,
-  getEducationsByUser,
+  getEducations,
   getEducationById,
   updateEducationById,
   deleteEducationById,

@@ -38,9 +38,15 @@ export default function NavbarUser() {
             className="menu menu-sm dropdown-content mt-3 z-[50] p-2 shadow bg-base-100 rounded-box w-52"
           >
             <li>
+              <button onClick={() => handleMenu("transaction")}>Main</button>
+            </li>
+            <li>
               <button onClick={() => handleMenu("transaction")}>
                 Transaksi
               </button>
+            </li>
+            <li>
+              <button onClick={() => handleMenu("edukasi")}>Edukasi</button>
             </li>
           </ul>
         </div>
@@ -60,6 +66,7 @@ export default function NavbarUser() {
           {[
             { label: "Main", type: "main" },
             { label: "Transaksi", type: "transaction" },
+            { label: "Edukasi", type: "education" },
           ].map((item) => (
             <li key={item.type}>
               <button

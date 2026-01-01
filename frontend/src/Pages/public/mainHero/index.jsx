@@ -4,6 +4,7 @@ import SectionMainLayanan from "./components/SectionMainLayanan";
 import { useSearchParams } from "react-router-dom";
 import Footer from "../../../components/Footer";
 import Transaction from "./components/Transaction";
+import Education from "./components/Education";
 
 export default function MainHero() {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,13 @@ export default function MainHero() {
       content = (
         <>
           <Transaction />
+        </>
+      );
+      break;
+    case "education":
+      content = (
+        <>
+          <Education />
         </>
       );
       break;

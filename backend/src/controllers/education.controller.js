@@ -12,7 +12,7 @@ const createEducation = catchAsync(async (req, res) => {
 });
 
 const getEducations = catchAsync(async (req, res) => {
-  const educations = await educationService.getEducationsByUser(req.user.id);
+  const educations = await educationService.getEducations();
   res.send(educations);
 });
 

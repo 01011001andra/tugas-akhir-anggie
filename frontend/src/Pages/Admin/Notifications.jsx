@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
-import AdminSidebar from "../../components/AdminSidebar";
 
 export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
