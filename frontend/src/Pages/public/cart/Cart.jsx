@@ -199,7 +199,7 @@ export default function Cart() {
     <div className="min-h-screen bg-base-100">
       <Navbar />
 
-      <main className="container mx-auto px-4 py-8 mt-20">
+      <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <Icon icon="mdi:shopping-cart" />
           Keranjang Belanja
@@ -210,7 +210,7 @@ export default function Cart() {
             <span className="loading loading-spinner loading-lg" />
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-20 flex items-center justify-center flex-col">
             <Icon icon="mdi:cart-off" className="text-6xl opacity-30 mb-4" />
             <p>Keranjang Anda kosong</p>
           </div>

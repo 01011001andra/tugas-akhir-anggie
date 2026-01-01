@@ -22,6 +22,10 @@ const getTransaction = catchAsync(async (req, res) => {
   const transaction = await transactionService.getTransactionById(req.params.transactionId);
   res.send(transaction);
 });
+const getTransactions = catchAsync(async (req, res) => {
+  const transaction = await transactionService.getTransactions();
+  res.send(transaction);
+});
 
 const updateTransactionStatus = catchAsync(async (req, res) => {
   const transaction = await transactionService.updateTransactionStatus(req.params.transactionId, req.body.status);
@@ -33,4 +37,5 @@ module.exports = {
   getMyTransactions,
   getTransaction,
   updateTransactionStatus,
+  getTransactions,
 };

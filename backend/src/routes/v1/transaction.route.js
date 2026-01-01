@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/', auth(), transactionController.createTransaction);
 router.get('/me', auth(), transactionController.getMyTransactions);
+router.get('/all', auth(), transactionController.getTransactions);
 router.get('/:transactionId', auth(), transactionController.getTransaction);
 router.patch('/:transactionId/status', auth(), transactionController.updateTransactionStatus);
 

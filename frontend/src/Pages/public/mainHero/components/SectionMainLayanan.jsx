@@ -31,8 +31,7 @@ function SectionMainLayanan() {
             </Card.Body>
           </Card>
 
-          {/* Kartu 2 */}
-          <Card className="shadow-lg">
+          {/* <Card className="shadow-lg">
             <Card.Img
               variant="top"
               src="https://picsum.photos/300/300"
@@ -51,7 +50,6 @@ function SectionMainLayanan() {
             </Card.Body>
           </Card>
 
-          {/* Kartu 3 */}
           <Card className="shadow-lg">
             <Card.Img
               variant="top"
@@ -69,7 +67,7 @@ function SectionMainLayanan() {
                 Jelajahi
               </button>
             </Card.Body>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </section>

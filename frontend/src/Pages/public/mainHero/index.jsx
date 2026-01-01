@@ -2,8 +2,8 @@ import NavbarUser from "../../../components/NavbarUser";
 import SectionMainHero from "./components/SectionMainHero";
 import SectionMainLayanan from "./components/SectionMainLayanan";
 import { useSearchParams } from "react-router-dom";
-import ProductSection from "../product/components/ProductSection";
 import Footer from "../../../components/Footer";
+import Transaction from "./components/Transaction";
 
 export default function MainHero() {
   const [searchParams] = useSearchParams();
@@ -17,7 +17,7 @@ export default function MainHero() {
     case "transaction":
       content = (
         <>
-          <ProductSection />
+          <Transaction />
         </>
       );
       break;

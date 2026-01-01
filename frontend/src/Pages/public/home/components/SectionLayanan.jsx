@@ -37,8 +37,7 @@ function SectionLayanan() {
             </Card.Body>
           </Card>
 
-          {/* Kartu 2 */}
-          <Card className="shadow-lg" data-aos="fade-up">
+          {/* <Card className="shadow-lg" data-aos="fade-up">
             <Card.Img
               variant="top"
               src={Chatbot}
@@ -57,7 +56,6 @@ function SectionLayanan() {
             </Card.Body>
           </Card>
 
-          {/* Kartu 3 */}
           <Card className="shadow-lg" data-aos="fade-up">
             <Card.Img
               variant="top"
@@ -75,7 +73,7 @@ function SectionLayanan() {
                 Jelajahi
               </button>
             </Card.Body>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </section>

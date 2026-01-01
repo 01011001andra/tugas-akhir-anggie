@@ -13,11 +13,12 @@ export default function AdminSidebar({ children }) {
     { path: "/admin/products", icon: "mdi:leaf", label: "Produk" },
     { path: "/admin/educations", icon: "mdi:book", label: "Education" },
     { path: "/admin/users", icon: "mdi:account-group", label: "User" },
-    {
-      path: "/admin/notifications",
-      icon: "mdi:bell-outline",
-      label: "Notifikasi",
-    },
+    { path: "/admin/transactions", icon: "mdi:money", label: "Transaction" },
+    // {
+    //   path: "/admin/notifications",
+    //   icon: "mdi:bell-outline",
+    //   label: "Notifikasi",
+    // },
   ];
 
   const isActive = (path) =>

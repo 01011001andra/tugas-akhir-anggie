@@ -80,24 +80,46 @@ const createTransaction = async ({ userId, items, paymentMethod, proof }) => {
 const getTransactionsByUser = async (userId) => {
   return prisma.transaction.findMany({
     where: { userId },
+    include: { product: true, user: true },
   });
+};
+const getTransactions = async () => {
+  return prisma.transaction.findMany({ include: { product: true, user: true } });
 };
 
 const getTransactionById = async (id) => {
   return prisma.transaction.findFirst({
     where: { id },
+    include: { product: true, user: true },
   });
 };
 
-const updateTransactionStatus = async (id, statusValue) => {
-  const trx = await getTransactionById(id);
+const updateTransactionStatus = async (id, action) => {
+  // 🔒 validasi action
+  if (!['APPROVE', 'REJECT'].includes(action)) {
+    throw new ApiError(status.BAD_REQUEST, 'Action harus APPROVE atau REJECT');
+  }
+
+  const trx = await prisma.transaction.findUnique({
+    where: { id },
+  });
+
   if (!trx) {
     throw new ApiError(status.NOT_FOUND, 'Transaction not found');
   }
 
+  // ❌ tidak boleh update jika sudah final
+  if (trx.status !== 'PENDING') {
+    throw new ApiError(status.BAD_REQUEST, 'Transaction sudah diproses');
+  }
+
+  const nextStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+
   return prisma.transaction.update({
     where: { id },
-    data: { status: statusValue },
+    data: {
+      status: nextStatus,
+    },
   });
 };
 
@@ -106,4 +128,5 @@ module.exports = {
   getTransactionsByUser,
   getTransactionById,
   updateTransactionStatus,
+  getTransactions,
 };
